@@ -41,7 +41,7 @@ app.post("/login", (req, res) => {
     return res.status(400).json({ message: "Email dan password harus diisi" });
   }
 
-  const sql = "SELECT * FROM msuser WHERE email = ? AND password = ?";
+  const sql = "SELECT * FROM msuser WHERE UserEmail = ? AND UserPassword = ?";
   db.query(sql, [email, password], (err, results) => {
     if (err) {
       console.error("❌ Database query error:", err);
@@ -55,6 +55,7 @@ app.post("/login", (req, res) => {
     }
   });
 });
+
 
 // Jalankan server
 app.listen(port, () => {
