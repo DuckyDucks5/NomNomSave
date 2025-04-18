@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_se/view/home_page.dart';
 import 'package:flutter_se/view/login_page.dart';
 import 'package:flutter_se/view/register_page.dart';
+import 'package:flutter_se/view/update_page.dart';
 //import 'package:flutter_se/view/register_page.dart';
 
 void main() {
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         '/' : (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
+        '/update': (context) => const UpdatePage(),
       }
     );
   }

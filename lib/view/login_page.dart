@@ -29,17 +29,19 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final data = jsonDecode(response.body);
-    
+
     setState(() {
       isLoading = false;
       if (response.statusCode == 200) {
-        Navigator.pushReplacementNamed(context, "/home"); // Navigasi ke Home Page
+        Navigator.pushReplacementNamed(
+          context,
+          "/home",
+        ); // Navigasi ke Home Page
       } else {
         errorMessage = data['message'];
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +106,10 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
                     errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
 
@@ -119,7 +124,10 @@ class _LoginPageState extends State<LoginPage> {
                     // Google Sign-In Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 50,
+                          vertical: 10,
+                        ),
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.white,
                         side: const BorderSide(color: Colors.orange),
@@ -131,10 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image.asset(
-                            'view/assets/googlelogo.png',
-                            height: 24,
-                          ),
+                          Image.asset('assets/googlelogo.png', height: 24),
                           const SizedBox(width: 10),
                           const Text("Continue with Google"),
                         ],
@@ -147,32 +152,40 @@ class _LoginPageState extends State<LoginPage> {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 100,
+                          vertical: 15,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
                       onPressed: isLoading ? null : login,
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "LOGIN →",
-                              style: TextStyle(fontSize: 18),
-                            ),
+                      child:
+                          isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : const Text(
+                                "LOGIN →",
+                                style: TextStyle(fontSize: 18),
+                              ),
                     ),
                     const SizedBox(height: 10),
 
                     // Register Link
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, "/register"); // Navigasi ke Register Page
+                        Navigator.pushNamed(
+                          context,
+                          "/update",
+                        ); // Navigasi ke Register Page
                       },
                       child: const Text(
                         "Don't have an account? Register here.",
                         style: TextStyle(color: Colors.orange),
                       ),
                     ),
-
                   ],
                 ),
               ),
