@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
 
 const app = express();
 const port = 3000;
@@ -33,6 +34,7 @@ app.use(passport.session());
 app.use("/", authRoutes);
 app.use("/", roomRoutes);
 app.use("/", userRoutes);
+app.use("/", productRoutes);
 
 // Start Server
 app.listen(port, () => {

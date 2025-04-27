@@ -98,7 +98,7 @@ exports.viewRoom = (req, res) => {
 
 exports.updateRoom = (req, res) => {
   const { teamName, teamDesc } = req.body;
-  const { teamId } = req.params;
+  const { teamId } = req.params.teamId;
 
   roomModel.updateRoom(teamName, teamDesc, teamId, (err, result) => {
     if (err) {
@@ -114,7 +114,8 @@ exports.updateRoom = (req, res) => {
 };
 
 exports.leaveRoom = (req, res) => {
-  const { userId, teamId } = req.params;
+  const { userId} = req.params.userId;
+  const { teamId} = req.params.teamId;
 
   roomModel.removeUserFromRoom(userId, teamId, (err, result) => {
     if (err) {
@@ -130,7 +131,7 @@ exports.leaveRoom = (req, res) => {
 };
 
 exports.deleteRoom = (req, res) => {
-  const { teamId } = req.params;
+  const { teamId } = req.params.teamId;
 
   roomModel.deleteRoom(teamId, (err) => {
     if (err) {
