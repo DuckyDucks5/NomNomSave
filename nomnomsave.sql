@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 02, 2025 at 11:12 AM
+-- Generation Time: Apr 27, 2025 at 01:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -50,8 +50,19 @@ CREATE TABLE `msproduct` (
   `ProductID` int(11) NOT NULL,
   `ProductName` varchar(20) NOT NULL,
   `ExpiredDate` date NOT NULL,
-  `UserUserID` int(11) NOT NULL
+  `UserUserID` int(11) NOT NULL,
+  `TeamTeamID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `msproduct`
+--
+
+INSERT INTO `msproduct` (`ProductID`, `ProductName`, `ExpiredDate`, `UserUserID`, `TeamTeamID`) VALUES
+(3, 'Ayam Potong', '2025-01-12', 1, 2),
+(4, 'Babi', '2023-02-11', 1, 2),
+(5, 'Kangkung', '2023-02-01', 1, 2),
+(6, 'Roti', '2023-01-23', 1, 2);
 
 -- --------------------------------------------------------
 
@@ -114,7 +125,8 @@ ALTER TABLE `mscollaboration`
 --
 ALTER TABLE `msproduct`
   ADD PRIMARY KEY (`ProductID`),
-  ADD KEY `UserUserID` (`UserUserID`);
+  ADD KEY `UserUserID` (`UserUserID`),
+  ADD KEY `msproduct_ibfk_2` (`TeamTeamID`);
 
 --
 -- Indexes for table `msteam`
@@ -138,6 +150,12 @@ ALTER TABLE `msuser`
 --
 ALTER TABLE `mscollaboration`
   MODIFY `CollabID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `msproduct`
+--
+ALTER TABLE `msproduct`
+  MODIFY `ProductID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `msteam`
@@ -166,7 +184,8 @@ ALTER TABLE `mscollaboration`
 -- Constraints for table `msproduct`
 --
 ALTER TABLE `msproduct`
-  ADD CONSTRAINT `msproduct_ibfk_1` FOREIGN KEY (`UserUserID`) REFERENCES `msuser` (`UserID`) ON DELETE CASCADE;
+  ADD CONSTRAINT `msproduct_ibfk_1` FOREIGN KEY (`UserUserID`) REFERENCES `msuser` (`UserID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `msproduct_ibfk_2` FOREIGN KEY (`TeamTeamID`) REFERENCES `msteam` (`TeamID`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -53,6 +53,7 @@ app.post("/login", (req, res) => {
     } else {
       res.status(401).json({ message: "Email atau password salah" });
     }
+    
   });
 });
 
@@ -185,7 +186,7 @@ app.post("/join-room", (req,res) =>{
   )
 })
 
-app.post("/view-room", (req, res)=>{
+app.get("/view-room", (req, res)=>{
   const {userId} = req.body;
 
   db.query(
@@ -285,5 +286,103 @@ app.put("/update-room/:teamId", (req, res) =>{
 
       res.status(200).json({message: "Room updated succesfully!"});
     }
+  )
+})
+
+//PRODUCT -- RELATED
+app.post("/add-product", (req, res) => {
+  const {userId, teamId, ProductName, ExpiredDate} = req.body;
+
+  if(!userId || !teamId || !ProductName || !ExpiredDate){
+    return res.status(400).json({message: "Every Field Must Be Filled!"});
+  }
+
+  db.query(
+    "INSERT INTO msproduct (ProductName, ExpiredDate, UserUserID, TeamTeamID) VALUES (?, ?, ?, ?)",
+    [ProductName, ExpiredDate, userId, teamId], (err, result) => {
+      if(err){
+        return res.status(500).json({error: err.message});
+      }
+
+      res.status(200).json({message: "Product Successfully Added"})
+    }
+  )
+})
+
+app.get("/view-product", (req, res) => {
+  const {teamId} = req.body;
+
+  db.query(
+    "SELECT ProductName, DATE_FORMAT(ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, UserUserID FROM msproduct WHERE TeamTeamID = ?",
+    [teamId], (err,result) => {
+      if(err){
+        return res.status(500).json({error: err.message});
+      }
+
+      if(result.length === 0){
+        return res.status(404).json({message: "No Product Yet!"});
+      }
+
+      res.status(200).json(result);
+    }
+  )
+})
+
+
+app.put("/update-product/:productId", (req, res) => {
+  const productId = req.params.productId;
+  const {ProductName, ExpiredDate} = req.body;
+
+  db.query(
+    "UPDATE msproduct SET ProductName =?, ExpiredDate =? WHERE ProductID =?",
+    [ProductName, ExpiredDate, productId], (err, result) => {
+      if(err){
+        return res.status(500).json({error :err.message});
+      }
+
+      if(result.affectedRows === 0){
+        return res.status(404).json({message: "Product Not Found."});
+      }
+
+      return res.status(200).json({message: "Product Updated!"});
+    }
+  )
+})
+
+app.delete("/delete-product/:productId", (req, res) =>{
+  const productId = req.params.productId;
+
+  db.query(
+    "DELETE FROM msproduct WHERE ProductID = ?", [productId], (err, result) =>{
+      if(err){
+        return res.status(500).json({error: err.message});
+      }
+
+      if(result.affectedRows === 0){
+        return res.status(404).json({message: "Product not found."});
+      }
+
+      res.status(200).json({message: "Product deleted successfully."});
+    }
+  )
+}
+)
+
+app.get("/overview-product/:userId", (req,res) => {
+  const userId = req.params.userId;
+
+  db.query(
+     "SELECT mp.ProductID, mp.ProductName, DATE_FORMAT(mp.ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, mt.TeamName FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID  WHERE UserUserID =? ORDER BY ExpiredDate ASC LIMIT 3"
+     , [userId], (err, result) =>{
+      if(err){
+        return res.status(500).json({error: err.message})
+      }
+
+      if(result.length === 0){
+        return res.status(404).json({message: "No Product Yet!"});
+      }
+
+      res.status(200).json(result);
+     }
   )
 })
