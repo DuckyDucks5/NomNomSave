@@ -4,7 +4,10 @@ import 'package:flutter_se/view/home_page.dart';
 import 'package:flutter_se/view/invite_member_page.dart';
 import 'package:flutter_se/view/login_page.dart';
 import 'package:flutter_se/view/member_leave_page.dart';
+import 'package:flutter_se/view/product_category.dart';
+import 'package:flutter_se/view/product_list_categories_page.dart';
 import 'package:flutter_se/view/register_page.dart';
+import 'package:flutter_se/view/update_product_page.dart';
 import 'package:flutter_se/view/update_room_page.dart';
 import 'package:flutter_se/view/view_member_page.dart';
 import 'package:flutter_se/view/view_room_page.dart';
@@ -40,7 +43,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       routes: {
-        '/' : (context) => const LoginPage(),
+        '/': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/updateRoom': (context) => const UpdatePage(),
@@ -48,8 +51,10 @@ class MyApp extends StatelessWidget {
         '/inviteMember': (context) => const InviteMemberPage(),
         '/memberLeave': (context) => const MemberLeavePage(),
         '/viewMember': (context) => const ViewMemberPage(),
-        'createRoom': (context) => const CreateRoom(),
-      }
+        '/createRoom': (context) => const CreateRoom(),
+        '/productCategory': (context) => CategoriesListPage(),
+        '/productPerCategory': (context) => const BakeryApp(),
+      },
     );
   }
 }

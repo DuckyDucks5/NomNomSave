@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_se/view/update_room_page.dart';
 
 void main() {
   runApp(const ViewRoom());
@@ -16,8 +17,37 @@ class ViewRoom extends StatelessWidget {
   }
 }
 
-class RoomPage extends StatelessWidget {
+void _navigateToUpdateRoomPage(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const UpdatePage()),
+  );
+}
+
+bool isExpanded = false;
+
+List<Map<String, String>> members = [
+  {"label": "You", "name": "Siapanamanydmnrumahny"},
+  {"label": "A", "name": "Auryn"},
+  {"label": "S", "name": "Selina"},
+];
+
+class RoomPage extends StatefulWidget {
   const RoomPage({Key? key}) : super(key: key);
+
+  @override
+  State<RoomPage> createState() => _RoomPageState();
+}
+
+class _RoomPageState extends State<RoomPage> {
+  bool isExpanded = false;
+
+  List<Map<String, String>> members = [
+    {"label": "You", "name": "Siapanamanydmnrumahny"},
+    {"label": "A", "name": "Auryn"},
+    {"label": "S", "name": "Selina"},
+    {"label": "D", "name": "Dontol"},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +57,10 @@ class RoomPage extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: const BackButton(color: Colors.black),
-        backgroundColor: Colors.transparent, // makes it fully transparent
-        elevation: 0, // removes shadow
-        shadowColor: Colors.transparent, // extra safety
-        surfaceTintColor: Colors.transparent, // for Material 3 themes
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -43,7 +73,10 @@ class RoomPage extends StatelessWidget {
                   const Center(
                     child: Text(
                       "Nomnom’s",
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -60,21 +93,134 @@ class RoomPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Row(
-                    children: const [
-                      Text("Member/s",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      Icon(Icons.keyboard_arrow_down),
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => isExpanded = !isExpanded),
+                        child: Row(
+                          children: [
+                            const Text(
+                              "Member/s",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Icon(
+                              isExpanded
+                                  ? Icons.keyboard_arrow_up
+                                  : Icons.keyboard_arrow_down,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildMemberCircle("You", orange),
-                      _buildMemberCircle("A", orange),
-                      _buildMemberCircle("S", orange),
-                      _buildAddMemberCircle(),
-                    ],
+                  const SizedBox(height: 12),
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 300),
+                    firstChild: Row(
+                      children: [
+                        for (var member in members)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: CircleAvatar(
+                              backgroundColor: const Color(0xFFF49A50),
+                              radius: 20,
+                              child: Text(
+                                member["label"]!,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        GestureDetector(
+                          onTap: () {
+                            // Add member logic
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            margin: const EdgeInsets.only(left: 4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey),
+                            ),
+                            child: const Icon(Icons.add, color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                    secondChild: SizedBox(
+                      height: 200,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            for (var member in members)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: const Color(0xFFF49A50),
+                                      radius: 20,
+                                      child: Text(
+                                        member["label"]!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        member["name"]!,
+                                        style: const TextStyle(fontSize: 16),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            GestureDetector(
+                              onTap: () {
+                                // Add new member logic
+                              },
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.grey),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    "Add New Member",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    crossFadeState:
+                        isExpanded
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -94,10 +240,7 @@ class RoomPage extends StatelessWidget {
                         "Product List",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      Text(
-                        "View All",
-                        style: TextStyle(color: orange),
-                      ),
+                      Text("View All", style: TextStyle(color: orange)),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -116,11 +259,19 @@ class RoomPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildActionButton("Update Room", orange),
+                        child: _buildActionButton(
+                          "Update Room",
+                          orange,
+                          () => _navigateToUpdateRoomPage(context),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: _buildActionButton("Delete Room", Colors.red),
+                        child: _buildActionButton(
+                          "Delete Room",
+                          Colors.red,
+                          () => _showDeleteConfirmation(context),
+                        ),
                       ),
                     ],
                   ),
@@ -190,20 +341,91 @@ class RoomPage extends StatelessWidget {
     );
   }
 
-  static Widget _buildActionButton(String label, Color color) {
+  static Widget _buildActionButton(
+    String label,
+    Color color,
+    VoidCallback onPress,
+  ) {
     return SizedBox(
       height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white, 
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        onPressed: () {},
+        onPressed: onPress,
         child: Text(label),
       ),
     );
   }
+}
+
+void _showDeleteConfirmation(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+    ),
+    isScrollControlled: true,
+    builder: (_) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Are you sure to delete this room?",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "By deleting this room, all of your saved nomnoms will be deleted ",
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const Text(
+              "permanently.",
+              style: TextStyle(color: Colors.red, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle delete logic
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF4A651),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text("Delete Room"),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(
+                  color: Color(0xFFF4A651),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
 }
