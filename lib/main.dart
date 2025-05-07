@@ -54,6 +54,8 @@ class MyApp extends StatelessWidget {
         '/createRoom': (context) => const CreateRoom(),
         '/productCategory': (context) => CategoriesListPage(),
         '/productPerCategory': (context) => const BakeryApp(),
+        // Beberapa bagian di componentnya bisa bersifat redundant, tolong di reuse saja daripada di code ulang.
+        // Usahakan menggunakan satefull yakk! Thank you
       },
     );
   }
