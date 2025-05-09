@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 08, 2025 at 10:51 AM
+-- Generation Time: May 09, 2025 at 12:16 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,31 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `mscategory`
+--
+
+CREATE TABLE `mscategory` (
+  `CategoryID` int(11) NOT NULL,
+  `CategoryName` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `mscategory`
+--
+
+INSERT INTO `mscategory` (`CategoryID`, `CategoryName`) VALUES
+(1, 'Bakery & Bread'),
+(2, 'Beverages'),
+(3, 'Canned & Preserved Food'),
+(4, 'Dairy & Eggs'),
+(5, 'Frozen Food'),
+(6, 'Snack & Sweets'),
+(7, 'Spice & Condiments'),
+(8, 'Other');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `mscollaboration`
 --
 
@@ -39,8 +64,8 @@ CREATE TABLE `mscollaboration` (
 
 INSERT INTO `mscollaboration` (`CollabID`, `UserUserID`, `TeamTeamID`) VALUES
 (3, 5, 2),
-(4, 6, 11),
-(5, 7, 12);
+(5, 7, 12),
+(7, 6, 2);
 
 -- --------------------------------------------------------
 
@@ -52,8 +77,19 @@ CREATE TABLE `msproduct` (
   `ProductID` int(11) NOT NULL,
   `ProductName` varchar(20) NOT NULL,
   `ExpiredDate` date NOT NULL,
-  `UserUserID` int(11) NOT NULL
+  `UserUserID` int(11) NOT NULL,
+  `TeamTeamID` int(11) DEFAULT NULL,
+  `ProductCategory` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `msproduct`
+--
+
+INSERT INTO `msproduct` (`ProductID`, `ProductName`, `ExpiredDate`, `UserUserID`, `TeamTeamID`, `ProductCategory`) VALUES
+(4, 'cookies', '2025-05-09', 6, 2, 1),
+(5, 'mentai', '2025-05-12', 6, 2, 8),
+(6, 'karage', '2025-05-10', 6, 2, 5);
 
 -- --------------------------------------------------------
 
@@ -76,12 +112,10 @@ CREATE TABLE `msteam` (
 
 INSERT INTO `msteam` (`TeamID`, `TeamName`, `TeamCreateDate`, `RoomCode`, `TeamDescription`, `TeamProfileIndex`) VALUES
 (2, 'TestingRoomUPT1', '2025-04-02', 'DJ1YS', 'Test 123 Anjay UPT1', 0),
-(3, 'makananku yey', '2025-05-05', '8V43P', 'ini isinya makananku semua', 0),
 (4, 'Roomnya auryn', '2025-05-05', 'JVFPH', 'Ini room makanan untuk auryn, yang bukan auryn jauh-jauh sana', 0),
 (5, 'room apa ya', '2025-05-06', 'UUGZH', 'isinya apa ya', 0),
 (6, 'room1', '2025-05-08', 'YI85Y', 'testdesc1', 1),
 (10, 'testroom2', '2025-05-08', 'M23LK', 'testdescription2', 4),
-(11, 'testroom3', '2025-05-08', '8LPNV', 'roomdescription3', 2),
 (12, 'room4', '2025-05-08', 'RKYA3', 'description44444', 4);
 
 -- --------------------------------------------------------
@@ -95,23 +129,35 @@ CREATE TABLE `msuser` (
   `UserName` varchar(20) NOT NULL,
   `UserEmail` varchar(50) NOT NULL,
   `UserPassword` varchar(50) NOT NULL,
-  `UserPhoneNumber` varchar(15) DEFAULT NULL
+  `UserPhoneNumber` varchar(15) DEFAULT NULL,
+  `ResetToken` varchar(255) DEFAULT NULL,
+  `ResetTokenExpiry` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `msuser`
 --
 
-INSERT INTO `msuser` (`UserID`, `UserName`, `UserEmail`, `UserPassword`, `UserPhoneNumber`) VALUES
-(1, 'testuser', 'test@example.com', '$2b$10$pKsB2WIM4/r2EoiI4r/hCuIlAGWhTk9fhpHeUSmMSE3', '1234567890'),
-(3, 'jessica', 'jess123', '$2b$10$pVCT54yNbEoBy706mSuAi.fhN41BCNXJV/sH/.0gcwP', '1234567890'),
-(5, 'ryn', 'ryn@gmail.com', '123', '0123'),
-(6, 'admin', 'admin', '123', '123'),
-(7, 'auryn', 'auryn', '123', '09');
+INSERT INTO `msuser` (`UserID`, `UserName`, `UserEmail`, `UserPassword`, `UserPhoneNumber`, `ResetToken`, `ResetTokenExpiry`) VALUES
+(1, 'testuser', 'test@example.com', '$2b$10$pKsB2WIM4/r2EoiI4r/hCuIlAGWhTk9fhpHeUSmMSE3', '1234567890', NULL, NULL),
+(3, 'jessica', 'jess123', '$2b$10$pVCT54yNbEoBy706mSuAi.fhN41BCNXJV/sH/.0gcwP', '1234567890', NULL, NULL),
+(5, 'ryn', 'ryn@gmail.com', '123', '0123', NULL, NULL),
+(6, 'admin', 'admin', '123', '123', NULL, NULL),
+(7, 'auryn', 'auryn', '123', '09', NULL, NULL),
+(8, 'jessica bella', '2005jessicabella@gmail.com', '7654321', '0813', NULL, NULL),
+(10, 'jennie bella', 'bellsjs@gmail.com', '$2b$10$k/SYxWP.BFI08FvvbAKfp.mzHiEqU86sQ06WOmjoFPj', '08123', NULL, NULL),
+(11, 'jisoo bella', 'bellsjsss@gmail.com', '$2b$13$VE93.FfuLk2gloe2b8E1bOLN4pCfyYsggPolm5biwGj', '0812fsdf3', NULL, NULL),
+(12, 'roje bella', 'siapa@gmail.com', '$2b$13$vlHSA4h4M4IRhBmAnt17Keh42l2y244TufY.jpi1sBp', '623434', NULL, NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `mscategory`
+--
+ALTER TABLE `mscategory`
+  ADD PRIMARY KEY (`CategoryID`);
 
 --
 -- Indexes for table `mscollaboration`
@@ -123,7 +169,9 @@ ALTER TABLE `mscollaboration`
 -- Indexes for table `msproduct`
 --
 ALTER TABLE `msproduct`
-  ADD PRIMARY KEY (`ProductID`);
+  ADD PRIMARY KEY (`ProductID`),
+  ADD KEY `fk_team` (`TeamTeamID`),
+  ADD KEY `fk_product_category` (`ProductCategory`);
 
 --
 -- Indexes for table `msteam`
@@ -145,13 +193,13 @@ ALTER TABLE `msuser`
 -- AUTO_INCREMENT for table `mscollaboration`
 --
 ALTER TABLE `mscollaboration`
-  MODIFY `CollabID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `CollabID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `msproduct`
 --
 ALTER TABLE `msproduct`
-  MODIFY `ProductID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ProductID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `msteam`
@@ -163,7 +211,18 @@ ALTER TABLE `msteam`
 -- AUTO_INCREMENT for table `msuser`
 --
 ALTER TABLE `msuser`
-  MODIFY `UserID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `UserID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `msproduct`
+--
+ALTER TABLE `msproduct`
+  ADD CONSTRAINT `fk_product_category` FOREIGN KEY (`ProductCategory`) REFERENCES `mscategory` (`CategoryID`),
+  ADD CONSTRAINT `fk_team` FOREIGN KEY (`TeamTeamID`) REFERENCES `msteam` (`TeamID`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
