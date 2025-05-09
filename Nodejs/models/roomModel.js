@@ -38,6 +38,12 @@ const roomModel = {
     const sql = "DELETE FROM msteam WHERE TeamID =?";
     db.query(sql, [teamId], callback);
   },
+
+  checkUserInRoom: (userId, teamId, callback) =>{
+    const sql =
+    "SELECT u.UserID FROM msuser u JOIN mscollaboration c ON c.UserUserID = u.UserID JOIN msteam t ON t.TeamID = c.TeamTeamID WHERE c.UserUserID = ? AND c.TeamTeamID = ?";
+    db.query(sql, [userId, teamId], callback);
+  }
 };
 
 module.exports = roomModel;

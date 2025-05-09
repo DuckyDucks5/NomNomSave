@@ -5,10 +5,12 @@ const passport = require("passport");
 const session = require("express-session");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 
 const authRoutes = require("./routes/authRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const userRoutes = require("./routes/userRoutes");
+const calendarRoutes = require("./routes/calendarRoutes");
 const productRoutes = require("./routes/productRoutes");
 
 const app = express();
@@ -16,7 +18,10 @@ const port = 3000;
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+
+app.use(express.json());
+app.use(cookieParser());
+//app.use(bodyParser.json());
 
 // Session Configuration
 app.use(
@@ -35,6 +40,7 @@ app.use("/", authRoutes);
 app.use("/", roomRoutes);
 app.use("/", userRoutes);
 app.use("/", productRoutes);
+app.use("/", calendarRoutes);
 
 // Start Server
 app.listen(port, () => {

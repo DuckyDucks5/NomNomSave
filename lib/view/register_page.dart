@@ -27,7 +27,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:3000/register'); // Gunakan 'localhost' jika di browser
+    final url = Uri.parse('http://10.0.2.2:3000/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
