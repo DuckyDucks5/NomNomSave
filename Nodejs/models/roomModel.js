@@ -24,9 +24,9 @@ const roomModel = {
     db.query(sql, [userId], callback);
   },
 
-  updateRoom: (teamName, teamDesc, teamId, callback) => {
-    const sql = "UPDATE msteam SET TeamName =?, TeamDescription =? WHERE TeamID =?";
-    db.query(sql, [teamName, teamDesc, teamId], callback);
+  updateRoom: (teamName, teamDesc, teamId, profileImageIndex, callback) => {
+    const sql = "UPDATE msteam SET TeamName =?, TeamDescription =?, TeamProfileIndex = ? WHERE TeamID =?";
+    db.query(sql, [teamName, teamDesc, teamId, profileImageIndex], callback);
   },
 
   deleteRoom: (teamId, callback) => {
@@ -46,6 +46,12 @@ const roomModel = {
       WHERE TeamID = ?`;
     db.query(sql, [teamId], callback);
   },
+
+  checkUserInRoom: (userId, teamId, callback) =>{
+    const sql =
+    "SELECT u.UserID FROM msuser u JOIN mscollaboration c ON c.UserUserID = u.UserID JOIN msteam t ON t.TeamID = c.TeamTeamID WHERE c.UserUserID = ? AND c.TeamTeamID = ?";
+    db.query(sql, [userId, teamId], callback);
+  }
 };
 
 module.exports = roomModel;

@@ -3,10 +3,11 @@ const router = express.Router();
 const authController = require("../controllers/authController");
 
 // **Google Sign-in manual** route (ID Token)
-router.post("/auth/google", authController.googleSignIn);
+router.post("/auth/google/signin", authController.googleSignIn);
 
 // **Email & Password login**
 router.post("/login", authController.login);
+router.post("/logout", authController.logout);
 
 // **User Registration**
 router.post("/register", authController.register);

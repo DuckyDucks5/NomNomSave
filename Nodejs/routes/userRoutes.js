@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const userController = require("../controllers/authController");
+const  authenticateToken = require("../middleware/authenticateToken");
 
+router.post("/forgot-password", authenticateToken, userController.forgotPassword);
+router.post("/reset-password/:token", authenticateToken, userController.resetPassword);
+router.put("/update-profile", authenticateToken, userController.updateProfile);
 
-
-
-// Add any user-specific routes here in future if needed.
 module.exports = router;

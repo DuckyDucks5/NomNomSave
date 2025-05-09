@@ -1,12 +1,14 @@
 const roomModel = require("../models/roomModel");
+const { isUserInRoom} = require("../utils/roomUtils");
 
-// Utility function to generate room code
+
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 7).toUpperCase();
 }
 
 exports.createRoom = (req, res) => {
-  const { teamName, teamDesc, userId, profileImageIndex} = req.body;
+  const userId = req.user.userId;
+  const { teamName, teamDesc, profileImageIndex} = req.body;
 
   roomModel.getUserRooms(userId, (err, result) => {
     if (err) {
@@ -37,7 +39,8 @@ exports.createRoom = (req, res) => {
 };
 
 exports.joinRoom = (req, res) => {
-  const { userId, roomCode } = req.body;
+  const userId = req.user.userId;
+  const {roomCode }  = req.body;
 
   roomModel.getRoomByCode(roomCode, (err, result) => {
     if (err) {
@@ -81,40 +84,62 @@ exports.joinRoom = (req, res) => {
 };
 
 exports.viewRoom = (req, res) => {
-  const { teamId } = req.params;
+  const teamId = req.params.teamId;
+  const userId = req.user.userId;
 
-  roomModel.getRoomDetails(teamId, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  isUserInRoom(userId, teamId, (err, isMember) => {
+    if(err){
+      return res.status(500).json({error: err.message});
     }
 
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Room not found." });
+    if(!isMember){
+      return res.status(403).json({message: "You are not a member!"});
     }
 
-    res.status(200).json(result);
-  });
+    roomModel.getRoomDetails(teamId, (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+  
+      if (result.length === 0) {
+        return res.status(404).json({ message: "Room not found." });
+      }
+  
+      res.status(200).json(result);
+    });
+  })
 };
-
 exports.updateRoom = (req, res) => {
-  const { teamName, teamDesc } = req.body;
-  const { teamId } = req.params.teamId;
+  const { teamName, teamDesc, profileImageIndex } = req.body;
+  const teamId = req.params.teamId;
+  const userId = req.user.userId;
 
-  roomModel.updateRoom(teamName, teamDesc, teamId, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  isUserInRoom(userId, teamId, (err, isMember) => {
+    if(err){
+      return res.status(500).json({error: err.message});
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Room not found." });
+    if(!isMember){
+      return res.status(403).json({message: "You are not a member!"});
     }
 
-    res.status(200).json({ message: "Room updated successfully!" });
-  });
-};
+    roomModel.updateRoom(teamName, teamDesc, teamId, profileImageIndex, (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Room not found." });
+      }
+  
+      res.status(200).json({ message: "Room updated successfully!" });
+    });
+  })
+}
+
 
 exports.leaveRoom = (req, res) => {
-  const { userId} = req.params.userId;
+  const userId = req.user.userId;
   const { teamId} = req.params.teamId;
 
   roomModel.removeUserFromRoom(userId, teamId, (err, result) => {
@@ -131,19 +156,30 @@ exports.leaveRoom = (req, res) => {
 };
 
 exports.deleteRoom = (req, res) => {
-  const { teamId } = req.params.teamId;
+  const teamId = req.params.teamId;
+  const userId = req.user.userId;
 
-  roomModel.deleteRoom(teamId, (err) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  isUserInRoom(userId, teamId, (err, isMember) => {
+    if(err){
+      return res.status(500).json({error: err.message});
     }
 
-    roomModel.deleteRoomById(teamId, (err) => {
+    if(!isMember){
+      return res.status(403).json({message: "You are not a member!"});
+    }
+
+    roomModel.deleteRoom(teamId, (err) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-
-      res.status(200).json({ message: "Room deleted successfully." });
+  
+      roomModel.deleteRoomById(teamId, (err) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+  
+        res.status(200).json({ message: "Room deleted successfully." });
+      });
     });
-  });
+  })
 };
