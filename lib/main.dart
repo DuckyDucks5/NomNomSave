@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_se/view/create_room_page.dart';
+import 'package:flutter_se/view/forgot_pass_page.dart';
+import 'package:flutter_se/view/history_page.dart';
 import 'package:flutter_se/view/home_page.dart';
 import 'package:flutter_se/view/invite_member_page.dart';
 import 'package:flutter_se/view/login_page.dart';
@@ -54,6 +56,8 @@ class MyApp extends StatelessWidget {
         '/createRoom': (context) => const CreateRoom(),
         '/productCategory': (context) => CategoriesListPage(),
         '/productPerCategory': (context) => const BakeryApp(),
+        '/productHistoryCategory': (context) => ProductHistoryPage(),
+        '/forgotPage': (context) => ResetPasswordScreen(),
         // Beberapa bagian di componentnya bisa bersifat redundant, tolong di reuse saja daripada di code ulang.
         // Usahakan menggunakan satefull yakk! Thank you
       },
