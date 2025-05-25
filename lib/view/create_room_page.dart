@@ -17,6 +17,7 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
   bool isLoading = false;
   String? errorMessage;
   int? userID; // deklarasi global di _CreateRoomPageState
+  String? token;
 
   @override
   void initState() {
@@ -38,6 +39,11 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
   }
 
   Future<void> createRoom(String teamName, String teamDesc, int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      token = prefs.getString('token');
+    });
+
     final url = Uri.parse('http://10.0.2.2:3000/create-room'); // Emulator
 
     setState(() => isLoading = true);
@@ -45,7 +51,10 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          },
         body: jsonEncode({
           'teamName': teamName,
           'teamDesc': teamDesc,
@@ -53,11 +62,12 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
           'profileImageIndex': selectedImageIndex,
         }),
       );
+      print("response status code: ${response.statusCode}");
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 201) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('TeamID', data['teamId']);
+        // final prefs = await SharedPreferences.getInstance();
+        // await prefs.setInt('TeamID', data['teamId']);
 
         showDialog(
           context: context,

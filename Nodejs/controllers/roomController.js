@@ -6,19 +6,22 @@ function generateRoomCode() {
 }
 
 exports.createRoom = (req, res) => {
-  const { teamName, teamDesc, userId, profileImageIndex} = req.body;
+  const userId = req.user.userId;
+  const { teamName, teamDesc, profileImageIndex} = req.body;
+  console.log("profile image index " + profileImageIndex);
 
   roomModel.getUserRooms(userId, (err, result) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    
+    console.log("result" + result);
 
     if (result.length >= 7) {
       return res.status(400).json({ message: "User already in 7 rooms." });
     }
 
     const roomCode = generateRoomCode();
-
     roomModel.createRoom(teamName, roomCode, teamDesc, profileImageIndex, (err, result) => {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -95,7 +98,7 @@ exports.joinRoom = (req, res) => {
 };
 
 exports.viewRoom = (req, res) => {
-  const { userId } = req.params;
+  const  userId  = req.user.userId;
 
   roomModel.getRoomDetails(userId, (err, result) => {
     if (err) {

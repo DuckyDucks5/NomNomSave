@@ -3,7 +3,12 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = "nomnomsaveenvsecretanjay";
 
 function authenticateToken(req, res, next){
-    const token = req.cookies.token;
+
+    const bearerToken = req.headers['authorization'];
+    const token = bearerToken?.startsWith("Bearer ") ? bearerToken.split(' ')[1] : req.cookies.token;
+
+    console.log("bearertoken : " + bearerToken);
+    console.log("token : " + token);
 
     if(!token){
         return res.status(401).json({message: "Unauthorized, please log in"});

@@ -12,9 +12,19 @@ const userModel = {
     db.query(sql, [email], callback);
   },
 
+  setEmailVerified: (email, callback) =>{
+    const sql = "UPDATE msuser SET IsVerified = true WHERE UserEmail = ?";
+    db.query(sql, [email], callback);
+  },
+
   getUserByEmailPassword: (email, password, callback) => {
     const sql = "SELECT * FROM msuser WHERE UserEmail = ? AND UserPassword = ?";
     db.query(sql, [email, password], callback);
+  },
+
+  findUserEmail: (email, callback) => {
+    const sql = "SELECT * FROM msuser WHERE UserEmail  =? ";
+    db.query(sql, [email], callback);
   },
 
   saveUser: (userData, callback) => {
@@ -24,38 +34,51 @@ const userModel = {
   },
 
   forgotPassword: (userEmail, callback) => {
-    const sql =
-    "SELECT * FROM msuser WHERE UserEmail = ?";
+    const sql = "SELECT * FROM msuser WHERE UserEmail = ?";
     db.query(sql, [userEmail], callback);
   },
 
   updateResetToken: (userId, token, expiry, callback) => {
     const sql =
-    "UPDATE msuser SET ResetToken = ?, ResetTokenExpiry = ? WHERE UserID = ?";
+      "UPDATE msuser SET ResetToken = ?, ResetTokenExpiry = ? WHERE UserID = ?";
     db.query(sql, [token, expiry, userId], callback);
   },
 
-  updatePassword: (userId, password, callback) =>{
+  updatePassword: (userId, password, callback) => {
     const sql =
-    "UPDATE msuser SET UserPassword = ?, ResetToken = NULL, ResetTokenExpiry = NULL WHERE UserID = ?";
-    db.query(sql, [password,userId], callback);
+      "UPDATE msuser SET UserPassword = ?, ResetToken = NULL, ResetTokenExpiry = NULL WHERE UserID = ?";
+    db.query(sql, [password, userId], callback);
   },
 
   verifyResetToken: (token, callback) => {
-    const sql = 
-    "SELECT * FROM msuser WHERE ResetToken =? AND ResetTokenExpiry > ?";
+    const sql =
+      "SELECT * FROM msuser WHERE ResetToken =? AND ResetTokenExpiry > ?";
     db.query(sql, [token, Date.now()], callback);
   },
 
-  updateProfile: (userId, username, email, phonenumber, profileImageIndex, callback) => {
+  updateProfile: (
+    userId,
+    username,
+    email,
+    phonenumber,
+    profileImageIndex,
+    callback
+  ) => {
     const sql = `
     UPDATE msuser SET UserName = ?, UserEmail = ?, UserPhoneNumber = ?, UserProfileIndex = ? WHERE UserID = ?
     `;
-    db.query(sql, [username, email, phonenumber, profileImageIndex, userId], callback);
-  }
+    db.query(
+      sql,
+      [username, email, phonenumber, profileImageIndex, userId],
+      callback
+    );
+  },
+};
 
-  
-
+updateFCMToken: (userId, fcmToken, callback) => {
+  const sql = `
+    UPDATE msuser SET fcmToken = ? WHERE UserID = ?`;
+  db.query(sql, [fcmToken, userId], callback);
 };
 
 module.exports = userModel;

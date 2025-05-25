@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'product_page.dart';
 
-class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key});
+class AddProductPage extends StatefulWidget {
+  const AddProductPage({super.key});
 
   @override
-  State<AddProductScreen> createState() => _AddProductScreenState();
+  State<AddProductPage> createState() => _AddProductPageState();
 }
 
-class _AddProductScreenState extends State<AddProductScreen> {
+class _AddProductPageState extends State<AddProductPage> {
   List<dynamic> roomList = [];
   final List<String> _groupOptions = [];
   final List<String> _categoryOptions = [
@@ -21,7 +22,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     'Frozen Food',
     'Snack & Sweets',
     'Spice & Condiments',
-    'Others'
+    'Other',
   ];
 
   final TextEditingController _productNameController = TextEditingController();
@@ -39,37 +40,45 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Future<void> _fetchRooms() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
     if (userId == null) {
       return;
     }
 
-    print('UserID sekarang: $userId');
     final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
       setState(() {
         roomList = data;
         _groupOptions.clear();
-        _groupOptions.addAll(roomList.map((msteam) => msteam['TeamName'].toString()));
+        _groupOptions.addAll(
+          roomList.map((msteam) => msteam['TeamName'].toString()),
+        );
       });
     } else {
       throw Exception('Failed to load rooms');
     }
-
-    print('Room list adalah: $roomList');
   }
 
   Future<void> _addProduct() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User ID not found')),
-      );
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User ID not found')));
       return;
     }
 
@@ -77,8 +86,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
         _selectedCategory == null ||
         _selectedDate == null ||
         _productNameController.text.isEmpty) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please complete all fields')),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selectedDate = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+    );
+
+    if (selectedDate.isBefore(today)) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Expired date cannot be before today')),
       );
       return;
     }
@@ -87,30 +113,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json'
+      },
       body: jsonEncode({
         'userId': userId,
-        'teamName': _selectedGroup, // 👈 gunakan TeamName
+        'teamName': _selectedGroup,
         'ProductName': _productNameController.text,
         'ExpiredDate': _selectedDate!.toIso8601String(),
         'ProductCategory': _selectedCategory,
       }),
     );
 
-
-    print('Selected teamName: $_selectedGroup');
-    print('seleted category: $_selectedCategory');
-
     if (response.statusCode == 200) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product added successfully!')),
       );
-      Navigator.pop(context);
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context, 'goToProduct');
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const ProductPage()),
+      // );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add product')),
-      );
-      print(response.body);
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to add product')));
     }
   }
 
@@ -181,12 +212,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                       ),
                       value: _selectedGroup,
-                      items: _groupOptions
-                          .map((group) => DropdownMenuItem(
-                                value: group,
-                                child: Text(group),
-                              ))
-                          .toList(),
+                      items:
+                          _groupOptions
+                              .map(
+                                (group) => DropdownMenuItem(
+                                  value: group,
+                                  child: Text(group),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedGroup = value;
@@ -196,10 +230,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(height: 20),
 
                     // Product Name
-                    const Text(
-                      "Product Name",
-                      style: TextStyle(fontSize: 15),
-                    ),
+                    const Text("Product Name", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _productNameController,
@@ -227,12 +258,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                       ),
                       value: _selectedCategory,
-                      items: _categoryOptions
-                          .map((cat) => DropdownMenuItem(
-                                value: cat,
-                                child: Text(cat),
-                              ))
-                          .toList(),
+                      items:
+                          _categoryOptions
+                              .map(
+                                (cat) => DropdownMenuItem(
+                                  value: cat,
+                                  child: Text(cat),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedCategory = value;
@@ -242,10 +276,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(height: 20),
 
                     // Expired Date
-                    const Text(
-                      "Expired Date",
-                      style: TextStyle(fontSize: 15),
-                    ),
+                    const Text("Expired Date", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: _pickDate,
@@ -258,7 +289,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 12),
+                            vertical: 5,
+                            horizontal: 12,
+                          ),
                         ),
                         child: Text(
                           _selectedDate == null
@@ -279,7 +312,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFA726),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 14),
+                            horizontal: 32,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),

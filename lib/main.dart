@@ -8,7 +8,8 @@ import 'package:flutter_se/view/join_room_page.dart';
 import 'package:flutter_se/view/login_page.dart';
 import 'package:flutter_se/view/member_leave_page.dart';
 import 'package:flutter_se/view/register_page.dart';
-import 'package:flutter_se/view/view_member_page.dart';
+// import 'package:flutter_se/view/view_member_page.dart';
+import 'package:flutter_se/view/view_product_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,10 +48,11 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage2(),
         '/inviteMember': (context) => const InviteMemberPage(),
         '/memberLeave': (context) => const MemberLeavePage(),
-        '/viewMember': (context) => const ViewMemberPage(),
+        // '/viewMember': (context) => const ViewMemberPage(),
         '/createRoom': (context) => const CreateRoomPage(),
-        '/addProduct': (context) => const AddProductScreen(),
+        '/addProduct': (context) => const AddProductPage(),
         '/joinRoom': (context) => const JoinRoomPage(),
+        // '/viewProdcut': (context) => const BakeryApp(),
       }
     );
   }

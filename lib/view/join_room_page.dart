@@ -13,6 +13,7 @@ void main() {
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({super.key});
+  
 
   @override
   State<JoinRoomPage> createState() => _JoinRoomPageState();
@@ -41,12 +42,21 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
       errorMessage = null;
     });
 
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     try {
       final url = Uri.parse('http://10.0.2.2:3000/get-room-name/$enteredCode');
       
-      final response = await http.get(url);
-      print('response: ${response.body}');
+      final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -70,16 +80,15 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
         isLoading = false;
       });
     }
-    print('room name: $roomName');
   }
 
   Future<void> joinRoom() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
 
     if (userId == null) {
-      print('UserID not found in SharedPreferences');
       return;
     }
 
@@ -99,7 +108,10 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
 
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          },
         body: jsonEncode({
           'userId': userId,
           'roomCode': roomCode,
@@ -107,14 +119,15 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
       );
 
       final data = jsonDecode(response.body);
-      print('Join response: $data');
 
       if (response.statusCode == 200) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Successfully joined room!')),
         );
 
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (context) => const HomePage2()),
         ); 

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,8 +16,6 @@ class _LoginPageState extends State<LoginPage> {
   String password = "";
   bool isLoading = false;
   String? errorMessage;
-
- 
 
   Future<void> login() async {
     setState(() {
@@ -41,7 +38,6 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (response.statusCode == 200) {
-
       final hasRoom = data['hasRoom'] as bool;
       final user = data['user'];
       if (user == null || user['UserID'] == null) {
@@ -56,15 +52,29 @@ class _LoginPageState extends State<LoginPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('UserID', userId);
 
+
+
+      final token = data['token'];
+      if (token != null) {
+        await prefs.setString('token', token);
+      } else {
+        setState(() {
+          errorMessage = "Token not found in response.";
+        });
+        return;
+      }
+
+      await prefs.setString('token', token);
+      print("token bro: $token");
+
       if (!mounted) return;
-      if(hasRoom) {
+      if (hasRoom) {
         log("User has a room: ${data['room']}");
         Navigator.pushReplacementNamed(context, "/home");
       } else {
         log("User does not have a room: ${data['room']}");
         Navigator.pushReplacementNamed(context, "/homeNull");
       }
-
     } else {
       setState(() {
         errorMessage = data['message'];
@@ -125,14 +135,17 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              // const SizedBox(height: 10),
 
+              // const SizedBox(height: 10),
               if (errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
                     errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
 
@@ -149,7 +162,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-
               Center(
                 child: Column(
                   children: [
@@ -159,18 +171,24 @@ class _LoginPageState extends State<LoginPage> {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 100,
+                          vertical: 15,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
                       onPressed: isLoading ? null : login,
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "LOGIN →",
-                              style: TextStyle(fontSize: 18),
-                            ),
+                      child:
+                          isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : const Text(
+                                "LOGIN →",
+                                style: TextStyle(fontSize: 18),
+                              ),
                     ),
                     const SizedBox(height: 10),
 

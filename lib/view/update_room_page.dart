@@ -51,13 +51,17 @@ class UpdateRoomPage extends State<UpdatePage> {
   final teamId = widget.teamId;
   final profileImageIndex = selectedImageIndex ?? 0;
 
-  print("profile Image Index: $profileImageIndex");
+  final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
   final url = Uri.parse('http://10.0.2.2:3000/update-room/$teamId'); // Ganti dengan URL backend kamu
 
   final response = await http.put(
     url,
-    headers: {'Content-Type': 'application/json'},
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json'
+      },
     body: jsonEncode({
       'teamName': teamName, 
       'teamDesc': teamDesc,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_se/view/history_page.dart';
 import 'package:flutter_se/view/view_room_page.dart';
 import 'join_room_page.dart';
 import 'product_page.dart';
 import 'calendar_page.dart';
-import 'profile_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -21,6 +21,7 @@ class _HomePage2State extends State<HomePage2> {
   List<dynamic> roomList = [];
   List<dynamic> productSoonList = [];
   List<dynamic> recentlyAdded = [];
+  // String? token;
 
   @override
   void initState() {
@@ -32,16 +33,25 @@ class _HomePage2State extends State<HomePage2> {
 
   Future<void> fetchRooms() async {
     final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    // setState(() {
+    //   String? token =
+    // });
     final userId = prefs.getInt('UserID');
 
     if (userId == null) {
-      print('UserID not found in SharedPreferences');
       return;
     }
 
-    print('UserID sekarang: $userId');
     final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
-    final response = await http.get(url);
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
@@ -52,16 +62,24 @@ class _HomePage2State extends State<HomePage2> {
       throw Exception('Failed to load rooms');
     }
 
-    print('Room list adalah: $roomList');
+    print("Room list: $roomList");
   }
 
   Future<void> fetchProductSoon() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
     final url = Uri.parse('http://10.0.2.2:3000/overview-product-home/$userId');
-    final response = await http.get(url);
-    print("response status code: ${response.statusCode}");
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print("status code product soon : ${response.statusCode}");
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
@@ -71,19 +89,24 @@ class _HomePage2State extends State<HomePage2> {
     } else {
       throw Exception('Failed to load products');
     }
-
-    print("product soon list: $productSoonList");
+    print("product Soon: $productSoonList");
   }
 
   Future<void> fetchRecentlyAdded() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
     final url = Uri.parse(
       'http://10.0.2.2:3000/recently-added-product/$userId',
     );
-    final response = await http.get(url);
-    print("response status code: ${response.statusCode}");
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
@@ -93,6 +116,8 @@ class _HomePage2State extends State<HomePage2> {
     } else {
       throw Exception('Failed to load products');
     }
+
+    print("recently added : $recentlyAdded");
   }
 
   @override
@@ -111,9 +136,9 @@ class _HomePage2State extends State<HomePage2> {
           fetchRecentlyAdded();
         },
       ),
-      const ProductPage(),
+      const ProductPage(selectedRoomIndex: 0),
       const CalendarPage(),
-      const ProfilePage(),
+      const HistoryPage(),
     ];
 
     return Scaffold(
@@ -136,6 +161,12 @@ class _HomePage2State extends State<HomePage2> {
           onTap: (index) {
             setState(() {
               currentIndex = index;
+
+              if (index == 0) {
+                fetchRooms();
+                fetchProductSoon();
+                fetchRecentlyAdded();
+              }
             });
           },
           items: const [
@@ -209,6 +240,7 @@ class DashboardPage extends StatelessWidget {
                               ),
                         ),
                       );
+                      onReload();
                     },
                     child: Container(
                       margin: const EdgeInsets.only(right: 12),
@@ -243,8 +275,8 @@ class DashboardPage extends StatelessWidget {
                   );
                 } else {
                   return GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
+                    onTap: () async {
+                      await showModalBottomSheet(
                         context: context,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
@@ -255,6 +287,7 @@ class DashboardPage extends StatelessWidget {
                           return const CreateJoinRoomModal();
                         },
                       );
+                      onReload();
                     },
                     child: Container(
                       margin: const EdgeInsets.only(right: 12),
@@ -289,7 +322,7 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(height: 24),
           const Divider(),
           const Text(
-            "Expires Soon!",
+            "Expired Soon!",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
@@ -302,7 +335,7 @@ class DashboardPage extends StatelessWidget {
             final index = entry.key;
             final product = entry.value;
 
-            if (index < 1 || index > 3) return const SizedBox.shrink();
+            if (index >= 3) return const SizedBox.shrink();
 
             final name = product['ProductName'] as String;
             final teamName = product['TeamName'] as String;
@@ -342,7 +375,7 @@ class DashboardPage extends StatelessWidget {
                 const SizedBox(height: 12),
               ],
             );
-          }).toList(),
+          }), //.toList(),
           const SizedBox(height: 10),
           const Divider(),
           const Text(
@@ -356,6 +389,7 @@ class DashboardPage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ...recentlyAdded.map((product) {
+            print("isi produk : $product");
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
@@ -425,7 +459,20 @@ class DashboardPage extends StatelessWidget {
                       minimumSize: const Size(0, 24), // adjust height
                     ),
                     onPressed: () {
-                      // Tambahkan logika jika diperlukan
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => ProductPage(
+                                selectedRoomIndex: -1,
+                                roomId:
+                                    int.tryParse(
+                                      product['TeamID'].toString(),
+                                    ) ??
+                                    0,
+                              ),
+                        ),
+                      );
                     },
                     child: Text(
                       "View Detail",
@@ -435,53 +482,9 @@ class DashboardPage extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }), //.toList(),
 
           const SizedBox(height: 50),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductSoonItem(
-    String index,
-    String name,
-    String date,
-    String teamName,
-  ) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.redAccent.shade100),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Text(
-            index,
-            style: const TextStyle(
-              color: Colors.deepOrange,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(
-                  "from ${teamName}'s team",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            date,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
         ],
       ),
     );

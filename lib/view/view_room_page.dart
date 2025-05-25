@@ -80,9 +80,19 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   Future<void> _fetchMembers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     try {
+      final url = Uri.parse(
+        'http://10.0.2.2:3000/get-member-room/${widget.teamId}',
+      );
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/get-member-room/${widget.teamId}'),
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -105,7 +115,6 @@ class _RoomPageState extends State<RoomPage> {
         throw Exception('Failed to load members');
       }
     } catch (e) {
-      print('Error: $e');
       setState(() {
         isLoadingMembers = false;
       });
@@ -113,9 +122,17 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchMembers(String roomId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     try {
+      final url = Uri.parse(('http://10.0.2.2:3000/get-member-room/$roomId'));
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/get-member-room/$roomId'),
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -134,14 +151,21 @@ class _RoomPageState extends State<RoomPage> {
         throw Exception('Failed to load members');
       }
     } catch (e) {
-      print('Error: $e');
       return [];
     }
   }
 
   Future<void> _loadProductOverview(int teamId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final url = Uri.parse('http://10.0.2.2:3000/overview-product-room/$teamId');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
@@ -151,14 +175,24 @@ class _RoomPageState extends State<RoomPage> {
     } else {
       throw Exception('Failed to load product list');
     }
-    print("productList new: $productList");
   }
 
   Future<void> _deleteRoom() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     try {
-      final response = await http.delete(
-        Uri.parse('http://10.0.2.2:3000/delete-room/${widget.teamId}'),
+      final url = Uri.parse(
+        'http://10.0.2.2:3000/delete-room/${widget.teamId}',
       );
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -172,7 +206,6 @@ class _RoomPageState extends State<RoomPage> {
         throw Exception('Failed to delete room');
       }
     } catch (e) {
-      print("Delete error: $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Error deleting room')));
@@ -180,12 +213,21 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   Future<void> _leaveRoom() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     try {
-      final response = await http.delete(
-        Uri.parse(
-          'http://10.0.2.2:3000/leave-room/${widget.teamId}/$currentUserId',
-        ),
+      final url = Uri.parse(
+        'http://10.0.2.2:3000/leave-room/${widget.teamId}/$currentUserId',
       );
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -199,7 +241,6 @@ class _RoomPageState extends State<RoomPage> {
         throw Exception('Failed to leave room');
       }
     } catch (e) {
-      print("Leave room error: $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Error leaving room')));
@@ -258,7 +299,7 @@ class _RoomPageState extends State<RoomPage> {
                 const SizedBox(height: 10),
               ],
             );
-          }).toList(),
+          }), //.toList(),
 
           const SizedBox(height: 30),
           Row(
@@ -526,7 +567,6 @@ class _RoomPageState extends State<RoomPage> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else {
                   final allMembers = snapshot.data!;
-                  print("Members list: $allMembers");
 
                   // Pisahkan current user
                   final currentUserMember = allMembers.firstWhere(
@@ -564,9 +604,6 @@ class _RoomPageState extends State<RoomPage> {
                               if (index < orderedMembers.length) {
                                 final member = orderedMembers[index];
                                 final isYou = member['userId'] == currentUserId;
-                                print("Member: $member");
-                                print("Is you: $isYou");
-                                print("Current user ID: $currentUserId");
                                 return ListTile(
                                   leading: CircleAvatar(
                                     radius: 20,
@@ -830,7 +867,7 @@ class _RoomPageState extends State<RoomPage> {
             Text(
               "added by $addedBy",
               style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+            ),
           ],
         ),
         Column(
@@ -841,8 +878,11 @@ class _RoomPageState extends State<RoomPage> {
               style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             ),
             const SizedBox(height: 4),
-            Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          ]
+            Text(
+              date,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
         ),
       ],
     ),
