@@ -301,6 +301,8 @@ exports.resetPassword = (req, res) => {
 //---------------------------------
 exports.viewProfile = (req, res) => {
   const userId = req.user.userId;
+
+  console.log("userID: " + userId);
  
   userModel.viewProfile(userId, (err, result) => {
     if(err){
@@ -310,7 +312,7 @@ exports.viewProfile = (req, res) => {
     if(result.length === 0){
       return res.status(400).json({message: "User Not Found!"});
     }
-
+    console.log("Profile Result: ", result);
     res.status(200).json(result);
 
   })
@@ -318,9 +320,9 @@ exports.viewProfile = (req, res) => {
 
 exports.updateProfile = (req, res) => {
   const userId = req.user.userId;
-  const { username, userEmail, userPhoneNumber, profileImageIndex } = req.body;
+  const { UserName, UserEmail, UserPhoneNumber, ProfileImageIndex } = req.body;
 
-  userModel.updateProfile(userId, username, userEmail, userPhoneNumber, profileImageIndex, (err, result) => {
+  userModel.updateProfile(userId, UserName, UserEmail, UserPhoneNumber, ProfileImageIndex, (err, result) => {
     if(err){
       return res.status(500).json({error: err.message});
     }
@@ -330,5 +332,21 @@ exports.updateProfile = (req, res) => {
     }
 
     res.status(200).json({message: "Profile Successfully Updated!"});
+  })
+}
+
+exports.deleteMember = (req, res) => {
+  const { teamId, userId } = req.params;
+
+  userModel.deleteMember(teamId, userId, (err, result) => {
+    if(err){
+      return res.status(500).json({error: err.message});
+    }
+
+    if(result.affectedRows === 0){
+      return res.status(404).json({message: "Member not found!"});
+    }
+
+    res.status(200).json({message: "Member successfully deleted!"});
   })
 }

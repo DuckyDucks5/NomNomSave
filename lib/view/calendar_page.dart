@@ -23,7 +23,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
   // Menyimpan event sebagai widget untuk ditampilkan
   final Map<DateTime, List<Widget>> _todayEvents = {};
-  String? _token;
+  final Set<DateTime> _loadedDates = {};
+ 
   final String baseUrl = "http://10.0.2.2:3000";
 
   @override
@@ -35,15 +36,15 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _initialize() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedToken = prefs.getString('token');
+    //final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
 
-    if (storedToken != null) {
-      setState(() {
-        _token = storedToken;
-      });
-
+    if (token != null) {
+      final today = normalizeDate(DateTime.now());
+      _selectedDay = today;
+      _focusedDay = today;
       await _loadMarkedDates(_focusedDay);
-      await _loadEventsForDay(_focusedDay);
+      setState(() {});
     } else {
       print("Token not found");
     }
@@ -51,30 +52,41 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadMarkedDates(DateTime day) async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('userID');
-    if (_token == null) return;
+    final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
+
+    if (token == null) return;
 
     final month = day.month;
     final year = day.year;
+    print("userIDon loadmarkeddates: $userId");
 
     try {
       final response = await http.get(
-        Uri.parse("$baseUrl/dot-calendar?month=$month&year=$year/$userId"),
-        headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
+        Uri.parse(
+          "$baseUrl/dot-calendar?month=$month&year=$year&userId=$userId",
+        ),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
 
       print("response calendar loadMarkedDates: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final List<dynamic> dates = jsonDecode(response.body)['markedDates'];
-        List<Future> futures = [];
+
         for (var d in dates) {
           final date = normalizeDate(DateTime.parse(d));
-          futures.add(_loadEventsForDay(date));
+          if (!_loadedDates.contains(date)) {
+            await _loadEventsForDay(date);
+            _loadedDates.add(date);
+          }
+          print("list dates dot: $dates");
+          setState(() {});
         }
-        await Future.wait(futures);
-        setState(() {});
-        print("future dates dot: $futures");
+
         //print("list dates dot: $dates")
       } else {
         print("Failed to fetch marked dates");
@@ -85,7 +97,10 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadEventsForDay(DateTime day) async {
-    if (_token == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    //final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
+    if (token == null) return;
 
     final dateString =
         "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
@@ -96,7 +111,10 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       final response = await http.get(
         Uri.parse("$baseUrl/calendar-product?date=$dateString"),
-        headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
 
       print("response calendar loadEventsForDay: ${response.statusCode}");
@@ -106,12 +124,13 @@ class _CalendarPageState extends State<CalendarPage> {
         final todayEvents = (data['today'] ?? []) as List;
         print("dates data events: $data");
         setState(() {
-          _todayEvents[key] = todayEvents.map<Widget>((e) {
-            final name = e['name'] ?? 'Unknown';
-            final room = e['room'] ?? 'Unknown Room';
-            final date = e['date'] ?? '';
-            return EventItem(name: name, room: room, date: date);
-          }).toList();
+          _todayEvents[key] =
+              todayEvents.map<Widget>((e) {
+                final name = e['name'] ?? 'Unknown';
+                final room = e['room'] ?? 'Unknown Room';
+                final date = e['date'] ?? '';
+                return EventItem(name: name, room: room, date: date);
+              }).toList();
         });
       } else if (response.statusCode == 404) {
         setState(() {
@@ -150,11 +169,11 @@ class _CalendarPageState extends State<CalendarPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: orange,
-        onPressed: () => _showAddEventDialog(context),
-        child: const Icon(Icons.addchart_rounded, color: Colors.white),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: orange,
+      //   onPressed: () => _showAddEventDialog(context),
+      //   child: const Icon(Icons.addchart_rounded, color: Colors.white),
+      // ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -203,6 +222,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 onPageChanged: (focusedDay) {
                   setState(() {
                     _focusedDay = focusedDay;
+                    _selectedDay = focusedDay;
+                    _loadedDates.clear();
                   });
                   _loadMarkedDates(focusedDay);
                 },
@@ -253,47 +274,48 @@ class _CalendarPageState extends State<CalendarPage> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Add Product Expiration'),
-        content: TextField(
-          controller: _controller,
-          decoration: const InputDecoration(
-            labelText: 'Product Description',
-            prefixIcon: Icon(Icons.inventory_2_rounded),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: orange,
-              foregroundColor: Colors.white,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Add Product Expiration'),
+            content: TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                labelText: 'Product Description',
+                prefixIcon: Icon(Icons.inventory_2_rounded),
+              ),
             ),
-            onPressed: () {
-              if (_controller.text.trim().isNotEmpty) {
-                final key = normalizeDate(selectedDate);
-                setState(() {
-                  _todayEvents.putIfAbsent(key, () => []);
-                  _todayEvents[key]!.add(
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        _controller.text.trim(),
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                  );
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("Add"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: orange,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  if (_controller.text.trim().isNotEmpty) {
+                    final key = normalizeDate(selectedDate);
+                    setState(() {
+                      _todayEvents.putIfAbsent(key, () => []);
+                      _todayEvents[key]!.add(
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text(
+                            _controller.text.trim(),
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      );
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Add"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -322,12 +344,12 @@ class EventItem extends StatelessWidget {
             TextSpan(
               text: "$date: ",
               style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.red),
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
             ),
             TextSpan(text: "$name "),
-            TextSpan(
-              text: "from $room",
-            ),
+            TextSpan(text: "from $room"),
           ],
         ),
       ),

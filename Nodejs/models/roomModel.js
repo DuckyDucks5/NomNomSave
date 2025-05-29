@@ -36,6 +36,11 @@ const roomModel = {
     db.query(sql, [userId], callback);
   },
 
+  checkDuplicateRoom: (teamName, callback) => {
+    const sql = "SELECT TeamID FROM msteam WHERE TeamName = ?";
+    db.query(sql, [teamName], callback);
+  },
+
   getMemberRoom: (teamId, callback) => {
     const sql =
       "SELECT mu.UserName, mu.UserProfileIndex, mu.UserID FROM mscollaboration mc JOIN msuser mu ON mc.UserUserID = mu.UserID WHERE mc.TeamTeamID = ?";

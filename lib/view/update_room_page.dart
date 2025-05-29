@@ -125,7 +125,7 @@ class UpdateRoomPage extends State<UpdatePage> {
         const SizedBox(height: 30),
         Center(
           child: Stack(
-            clipBehavior: Clip.none, // Penting agar ikon kamera tidak terpotong
+            clipBehavior: Clip.none, 
             children: [
               // Gambar profil dengan bingkai orange
               GestureDetector(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'product_page.dart';
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({super.key});
@@ -13,6 +12,7 @@ class AddProductPage extends StatefulWidget {
 
 class _AddProductPageState extends State<AddProductPage> {
   List<dynamic> roomList = [];
+  Map<String, int> roomMap = {}; // Map teamName to teamId
   final List<String> _groupOptions = [];
   final List<String> _categoryOptions = [
     'Bakery & Bread',
@@ -42,9 +42,7 @@ class _AddProductPageState extends State<AddProductPage> {
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
-    if (userId == null) {
-      return;
-    }
+    if (userId == null) return;
 
     final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
     final response = await http.get(
@@ -60,9 +58,14 @@ class _AddProductPageState extends State<AddProductPage> {
       setState(() {
         roomList = data;
         _groupOptions.clear();
-        _groupOptions.addAll(
-          roomList.map((msteam) => msteam['TeamName'].toString()),
-        );
+        roomMap.clear();
+
+        for (var room in data) {
+          String name = room['TeamName'].toString();
+          int id = room['TeamID'];
+          _groupOptions.add(name);
+          roomMap[name] = id;
+        }
       });
     } else {
       throw Exception('Failed to load rooms');
@@ -75,10 +78,9 @@ class _AddProductPageState extends State<AddProductPage> {
     final token = prefs.getString('token');
 
     if (userId == null) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('User ID not found')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found')),
+      );
       return;
     }
 
@@ -86,7 +88,6 @@ class _AddProductPageState extends State<AddProductPage> {
         _selectedCategory == null ||
         _selectedDate == null ||
         _productNameController.text.isEmpty) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please complete all fields')),
       );
@@ -102,7 +103,6 @@ class _AddProductPageState extends State<AddProductPage> {
     );
 
     if (selectedDate.isBefore(today)) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Expired date cannot be before today')),
       );
@@ -115,11 +115,11 @@ class _AddProductPageState extends State<AddProductPage> {
       url,
       headers: {
         'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: jsonEncode({
         'userId': userId,
-        'teamName': _selectedGroup,
+        'teamId': roomMap[_selectedGroup],
         'ProductName': _productNameController.text,
         'ExpiredDate': _selectedDate!.toIso8601String(),
         'ProductCategory': _selectedCategory,
@@ -127,21 +127,14 @@ class _AddProductPageState extends State<AddProductPage> {
     );
 
     if (response.statusCode == 200) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product added successfully!')),
       );
-      // ignore: use_build_context_synchronously
       Navigator.pop(context, 'goToProduct');
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => const ProductPage()),
-      // );
     } else {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to add product')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to add product')),
+      );
     }
   }
 
@@ -185,7 +178,7 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
             ),
 
-            // Form content
+            // Form
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -199,28 +192,21 @@ class _AddProductPageState extends State<AddProductPage> {
                     const SizedBox(height: 15),
 
                     // Group Dropdown
-                    const Text(
-                      "Group Selected",
-                      style: TextStyle(fontSize: 15),
-                    ),
+                    const Text("Group Selected", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey),
                         ),
                       ),
                       value: _selectedGroup,
-                      items:
-                          _groupOptions
-                              .map(
-                                (group) => DropdownMenuItem(
-                                  value: group,
-                                  child: Text(group),
-                                ),
-                              )
-                              .toList(),
+                      items: _groupOptions.map((group) {
+                        return DropdownMenuItem(
+                          value: group,
+                          child: Text(group),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedGroup = value;
@@ -238,35 +224,27 @@ class _AddProductPageState extends State<AddProductPage> {
                         hintText: 'Enter your product name',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey),
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
 
                     // Product Category
-                    const Text(
-                      "Product Category",
-                      style: TextStyle(fontSize: 15),
-                    ),
+                    const Text("Product Category", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          borderSide: BorderSide(color: Colors.grey),
                         ),
                       ),
                       value: _selectedCategory,
-                      items:
-                          _categoryOptions
-                              .map(
-                                (cat) => DropdownMenuItem(
-                                  value: cat,
-                                  child: Text(cat),
-                                ),
-                              )
-                              .toList(),
+                      items: _categoryOptions.map((cat) {
+                        return DropdownMenuItem(
+                          value: cat,
+                          child: Text(cat),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedCategory = value;
@@ -275,7 +253,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Expired Date
+                    // Expired Date Picker
                     const Text("Expired Date", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     GestureDetector(
@@ -297,8 +275,8 @@ class _AddProductPageState extends State<AddProductPage> {
                           _selectedDate == null
                               ? 'dd / mm / yyyy'
                               : '${_selectedDate!.day.toString().padLeft(2, '0')} / '
-                                  '${_selectedDate!.month.toString().padLeft(2, '0')} / '
-                                  '${_selectedDate!.year}',
+                                '${_selectedDate!.month.toString().padLeft(2, '0')} / '
+                                '${_selectedDate!.year}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),

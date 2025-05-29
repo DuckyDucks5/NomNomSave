@@ -26,8 +26,8 @@ const productModel = {
   recentlyAdded: (userId, callback) => {
     const sql = `SELECT mp.ProductID, mp.ProductName, mt.TeamName, mu.UserName, mt.TeamID 
     FROM msteam mt JOIN msproduct mp ON mp.TeamTeamID = mt.TeamID 
-    JOIN msuser mu ON mu.UserID = mp.UserUserID 
-    WHERE mp.UserUserID = 13 ORDER BY mp.ProductID DESC LIMIT 3`;
+    JOIN msuser mu ON mu.UserID = mp.UserUserID
+    WHERE mp.UserUserID = ? ORDER BY mp.ProductID DESC LIMIT 3`;
     db.query(sql, [userId], callback);
   },
 
@@ -41,7 +41,7 @@ const productModel = {
     const sql = `SELECT mp.ProductID, mp.ProductName, DATE_FORMAT(mp.ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, mt.TeamName 
         FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
         JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID  
-        WHERE mc.UserUserID =? 
+        WHERE mc.UserUserID = ? 
         `;
     db.query(sql, [userId], callback);
   },
@@ -58,10 +58,12 @@ const productModel = {
   },
 
   overviewProduct: (userId, callback) => {
-    const sql = `SELECT mp.ProductID, mp.ProductName, DATE_FORMAT(mp.ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, mt.TeamName 
+    const sql = `SELECT mp.ProductID, mp.ProductName, DATE_FORMAT(mp.ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, mt.TeamName, mp.ProductCategoryId,
+        mcg.CategoryName, mp.TeamTeamID
         FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
-        JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID  
-        WHERE mc.UserUserID =? AND mp.ProductStatus = 1
+        JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID 
+        JOIN mscategory mcg ON mp.ProductCategoryId = mcg.CategoryID 
+        WHERE mc.UserUserID = ? AND mp.ProductStatus = 1
         ORDER BY ExpiredDate ASC LIMIT 3`;
     db.query(sql, [userId], callback);
   },
@@ -83,7 +85,7 @@ const productModel = {
       "UPDATE msproduct SET ProductName =?, ExpiredDate =?, ProductCategoryId =?, UserUserID =?, ProductStatus = 1 WHERE ProductID =?";
     db.query(
       sql,
-      [productName, ExpiredDate, ProductCategoryId, UserID, productId], 
+      [productName, ExpiredDate, ProductCategoryId, UserID, productId],
       callback
     );
   },
@@ -93,7 +95,8 @@ const productModel = {
         FROM msproduct mp 
         JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
         JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID
-        WHERE mc.UserUserID =? AND mp.ProductStatus IN(2,3)`;
+        WHERE mc.UserUserID =? AND mp.ProductStatus IN(2,3)
+        ORDER BY mp.ExpiredDate DESc;`;
     db.query(sql, [userId], callback);
   },
 
@@ -136,13 +139,32 @@ const productModel = {
   },
 
   countProducts: (teamId, callback) => {
-    const sql = `SELECT c.CategoryID, c.CategoryName, COUNT(p.ProductCategoryId) AS ProductCount
-    FROM msproduct p
-    JOIN mscategory c ON p.ProductCategoryId = c.CategoryID
-    WHERE p.TeamTeamID = ? AND p.ProductStatus = 1
-    GROUP BY c.CategoryName
-    ORDER BY c.CategoryName;`;
+    const sql = `SELECT 
+    c.CategoryID, 
+    c.CategoryName, 
+    COUNT(p.ProductCategoryId) AS ProductCount
+FROM 
+    msproduct p
+JOIN 
+    mscategory c ON p.ProductCategoryId = c.CategoryID
+WHERE 
+    p.TeamTeamID = ? 
+    AND p.ProductStatus = 1
+GROUP BY 
+    c.CategoryID, c.CategoryName
+ORDER BY 
+    c.CategoryName;
+`;
     db.query(sql, [teamId], callback);
+  },
+
+  updateExpiredStatus: (callback) => {
+    const sql = `
+    UPDATE msproduct
+    SET ProductStatus = 2
+    WHERE ExpiredDate < NOW() AND ProductStatus = 1;
+  `;
+    db.query(sql, callback);
   },
 };
 

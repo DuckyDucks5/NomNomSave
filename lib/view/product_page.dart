@@ -9,10 +9,10 @@ import 'join_room_page.dart';
 import 'create_room_page.dart';
 
 class ProductPage extends StatefulWidget {
-  final int? selectedRoomIndex;
+  // final int? selectedRoomIndex;
   final int? roomId;
 
-  const ProductPage({super.key, this.selectedRoomIndex, this.roomId});
+  const ProductPage({super.key, this.roomId});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -21,15 +21,15 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> {
   List<dynamic> roomList = [];
   List<dynamic> categoryCounts = [];
-  late int selectedRoomIndex;
+  // hapus late int selectedRoomIndex;
   late int roomId;
 
   @override
   void initState() {
     super.initState();
+    print("roomId di ProductPage: ${widget.roomId}");
+    roomId = widget.roomId ?? -1;
     fetchRooms();
-    // selectedRoomIndex = widget.selectedRoomIndex ?? 0;
-    // roomId = widget.roomId ?? 0;
   }
 
   Future<void> fetchRooms() async {
@@ -37,43 +37,27 @@ class _ProductPageState extends State<ProductPage> {
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
-    if (userId == null) {
-      return;
-    }
+    if (userId == null) return;
 
     final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
     final response = await http.get(
       url,
       headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          },
-      );
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
       setState(() {
         roomList = data;
-
-        if ((widget.selectedRoomIndex ?? -1) == -1) {
-          // Jika roomId juga valid, cari index berdasarkan roomId
-          if ((widget.roomId ?? -1) != -1) {
-            final index = data.indexWhere(
-              (room) => room['TeamID'] == widget.roomId,
-            );
-            if (index != -1) {
-              selectedRoomIndex = index;
-            }
-          }
-        } else {
-          selectedRoomIndex = widget.selectedRoomIndex!;
+        // Jika roomId belum diset (-1), gunakan TeamID dari room pertama
+        if (roomId == -1 && data.isNotEmpty) {
+          roomId = data[0]['TeamID'];
         }
-
-        // selectedRoomIndex = 0;
+        fetchProductCountForRoom(roomId);
       });
-      if (data.isNotEmpty) {
-        fetchProductCountForRoom(data[0]['TeamID']);
-      }
     } else {
       throw Exception('Failed to load rooms');
     }
@@ -81,9 +65,8 @@ class _ProductPageState extends State<ProductPage> {
 
   Future<void> fetchProductCountForRoom(int teamId) async {
     final prefs = await SharedPreferences.getInstance();
-    // final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
-    
+
     final url = Uri.parse('http://10.0.2.2:3000/count-products/$teamId');
     final response = await http.get(
       url,
@@ -127,24 +110,25 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget buildCategoryCard(String imagePath, String title) {
     final count = getCountByCategory(title);
-    final teamId =
-        roomList.isNotEmpty ? roomList[selectedRoomIndex]['TeamID'] : null;
     final categoryId = getCategoryId(title);
 
     return GestureDetector(
       onTap: () {
-        if (teamId != null) {
+        if (roomId != -1) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => ViewProductCategory(
-                    category: title,
-                    teamId: teamId,
-                    categoryId: categoryId,
-                  ),
+              builder: (context) => ViewProductCategory(
+                category: title,
+                teamId: roomId,
+                categoryId: categoryId,
+              ),
             ),
-          );
+          ).then((value) {
+            if (value == 'refresh') {
+              fetchProductCountForRoom(roomId);
+            }
+          });
         }
       },
       child: CategoryCard(imagePath: imagePath, title: title, count: count),
@@ -154,7 +138,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     const orange = Color(0xFFFF8C42);
-
+    // print("roomIndexdiProduct : $selectedRoomIndex");
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
@@ -166,9 +150,7 @@ class _ProductPageState extends State<ProductPage> {
           );
 
           if (result == 'goToProduct') {
-            // Refresh rooms and category counts setelah kembali dari AddProductPage
             await fetchRooms();
-            
           }
         },
         child: const Icon(Icons.addchart_rounded, color: Colors.white),
@@ -194,13 +176,13 @@ class _ProductPageState extends State<ProductPage> {
                     itemBuilder: (context, index) {
                       if (index < roomList.length) {
                         final room = roomList[index];
-                        final isSelected = index == selectedRoomIndex;
+                        final isSelected = room['TeamID'] == roomId;
                         return GestureDetector(
                           onTap: () {
                             setState(() {
-                              selectedRoomIndex = index;
+                              roomId = room['TeamID'];
                             });
-                            fetchProductCountForRoom(room['TeamID']);
+                            fetchProductCountForRoom(roomId);
                           },
                           child: Container(
                             margin: const EdgeInsets.only(right: 12),
@@ -245,10 +227,7 @@ class _ProductPageState extends State<ProductPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      color:
-                                          isSelected
-                                              ? Colors.black
-                                              : Colors.grey,
+                                      color: isSelected ? Colors.black : Colors.grey,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -401,7 +380,13 @@ class CategoryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: title == "Canned & Preserved Food" ? 12.9 : null,
+            ),
+          ),
           const SizedBox(height: 4),
           Text('$count items', style: TextStyle(color: Colors.grey.shade600)),
         ],
@@ -410,42 +395,82 @@ class CategoryCard extends StatelessWidget {
   }
 }
 
-// Modal untuk Create/Join Room
 class CreateJoinRoomModal extends StatelessWidget {
   const CreateJoinRoomModal({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const orange = Color(0xFFFF8C42);
+
     return Container(
       padding: const EdgeInsets.all(24),
-      height: 220,
+      height: 300,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: 10),
           const Text(
-            "Create or Join Room",
+            "Select One",
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: orange,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // tutup modal
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const CreateRoomPage()),
               );
             },
-            child: const Text("Create Room"),
+            child: const Text(
+              "Create New Room",
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
           ),
           const SizedBox(height: 12),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: orange,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // tutup modal
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const JoinRoomPage()),
               );
             },
-            child: const Text("Join Room"),
+            child: const Text(
+              "Join a Room",
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(
+                  color: Colors.orange,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.orange,
+                  decorationThickness: 2.0, // Tebal underline
+                  height: 2.5, // Menambahkan jarak antara teks dan underline
+                ),
+              ),
+            ),
           ),
         ],
       ),

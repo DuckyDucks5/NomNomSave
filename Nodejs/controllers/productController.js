@@ -2,20 +2,8 @@ const productModel = require("../models/productModel");
 const roomModel = require("../models/roomModel");
 
 exports.addProduct = (req, res) => {
-  const { userId, teamName, ProductName, ExpiredDate, ProductCategory } =
+  const { userId, teamId, ProductName, ExpiredDate, ProductCategory } =
     req.body;
-
-  // Validate teamId
-  roomModel.getRoombyName(teamName, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Error retrieving team ID" });
-    }
-
-    if (results.length === 0) {
-      return res.status(400).json({ error: "Invalid team name" });
-    }
-
-    const teamId = results[0].TeamID;
 
     // Validate ProductCategory
     productModel.changeCategory(ProductCategory, (err, results) => {
@@ -47,7 +35,6 @@ exports.addProduct = (req, res) => {
         }
       );
     });
-  });
 };
 
 exports.viewProduct = (req, res) => {
@@ -103,7 +90,7 @@ exports.viewProductCategory = (req, res) => {
 exports.overviewProduct = (req, res) => {
   const  userId  = req.user.userId;
 
-  console.log("userID overview: " + userId);
+  // console.log("userID overview: " + userId);
   productModel.overviewProduct(userId, (err, result) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -250,6 +237,20 @@ exports.markConsumed = (req, res) => {
     }
 
     res.status(200).json(result);
+  });
+};
+
+exports.markExpired = (req, res) => {
+  productModel.updateExpiredStatus((err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No expired products found." });
+    }
+
+    res.status(200).json({ message: "Expired products marked successfully." });
   });
 };
 

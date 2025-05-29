@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_se/view/product_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_se/view/update_room_page.dart';
+import 'package:flutter_se/view/homepage2.dart';
 
 class ViewRoom extends StatelessWidget {
   final int teamId;
@@ -69,9 +71,9 @@ class _RoomPageState extends State<RoomPage> {
 
   Future<void> _initializeData() async {
     int teamId = widget.teamId;
-    await _loadUserId(); // pastikan currentUserId sudah tersedia
-    await _fetchMembers(); // fetch member setelah userId tersedia
-    await _loadProductOverview(teamId); // fetch produk setelah userId tersedia
+    await _loadUserId();
+    await _fetchMembers();
+    await _loadProductOverview(teamId);
   }
 
   Future<void> _loadUserId() async {
@@ -247,12 +249,65 @@ class _RoomPageState extends State<RoomPage> {
     }
   }
 
+  Future<void> _deleteMember(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    try {
+      final url = Uri.parse(
+        'http://10.0.2.2:3000/delete-member/${widget.teamId}/$userId',
+      );
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ViewRoom(
+                  teamId: widget.teamId,
+                  teamName: widget.teamName,
+                  teamProfileIndex: widget.teamProfileIndex,
+                  teamDescription: widget.teamDescription,
+                  teamCode: widget.teamCode,
+                ),
+          ),
+          (Route<dynamic> route) => false,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Member delete successfully')),
+        );
+      } else {
+        throw Exception('Failed to delete member');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error deleting member')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home',
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -323,7 +378,7 @@ class _RoomPageState extends State<RoomPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: _buildActionButton("Delete Room", orange, () {
-                  _showDeleteConfirmation(context);
+                  _showDeleteRoomConfirmation(context);
                 }),
               ),
             ],
@@ -436,10 +491,19 @@ class _RoomPageState extends State<RoomPage> {
     children: [
       const Text("Product List", style: TextStyle(fontWeight: FontWeight.bold)),
       GestureDetector(
-        onTap:
-            () => ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text("View All clicked"))),
+        onTap: () {
+          // Navigasi ke HomePage2 dengan currentIndex 1 (ProductPage)
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage2(
+                initialIndex: 1,  // Set initial index ke ProductPage
+                initialRoomId: widget.teamId,  // Pass roomId
+              ),
+            ),
+            (Route<dynamic> route) => false,
+          );
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           constraints: const BoxConstraints(minHeight: 24),
@@ -626,7 +690,10 @@ class _RoomPageState extends State<RoomPage> {
                                               color: Colors.orange,
                                             ),
                                             onPressed: () {
-                                              // TODO: implement delete logic
+                                              _showDeleteMemberConfirmation(
+                                                context,
+                                                member['userId'],
+                                              );
                                             },
                                           ),
                                 );
@@ -759,7 +826,7 @@ class _RoomPageState extends State<RoomPage> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context) {
+  void _showDeleteRoomConfirmation(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -815,6 +882,92 @@ class _RoomPageState extends State<RoomPage> {
                     ),
                     child: const Text(
                       "Delete Room",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                  },
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.orange,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.orange,
+                      decorationThickness: 2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+    );
+  }
+
+  void _showDeleteMemberConfirmation(BuildContext context, int userId) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder:
+          (BuildContext sheetContext) => Container(
+            padding: const EdgeInsets.fromLTRB(40, 40, 40, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "Are you sure want to remove this user?",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: const TextStyle(fontSize: 15, color: Colors.grey),
+                    children: [
+                      const TextSpan(
+                        text:
+                            "By deleting this user, all of the user related information in this room will be deleted ",
+                      ),
+                      TextSpan(
+                        text: "permanently,",
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const TextSpan(text: " Proceed?"),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _deleteMember(userId); // Call the delete member function
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Remove User",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

@@ -12,7 +12,7 @@ const userModel = {
     db.query(sql, [email], callback);
   },
 
-  setEmailVerified: (email, callback) =>{
+  setEmailVerified: (email, callback) => {
     const sql = "UPDATE msuser SET IsVerified = true WHERE UserEmail = ?";
     db.query(sql, [email], callback);
   },
@@ -25,6 +25,31 @@ const userModel = {
   findUserEmail: (email, callback) => {
     const sql = "SELECT * FROM msuser WHERE UserEmail  =? ";
     db.query(sql, [email], callback);
+  },
+
+  viewProfile: (userId, callback) => {
+    const sql = `SELECT UserName, UserEmail, UserPhoneNumber, UserProfileIndex FROM msuser WHERE UserID = ?`;
+    db.query(sql, [userId], callback);
+  },
+
+  updateProfile: (
+    userId,
+    username,
+    email,
+    phonenumber,
+    profileImageIndex,
+    callback
+  ) => {
+    const sql = `
+    UPDATE msuser 
+    SET UserName = ?, UserEmail = ?, UserPhoneNumber = ?, UserImageIndex = ? 
+    WHERE UserID = ?
+  `;
+    db.query(
+      sql,
+      [username, email, phonenumber, profileImageIndex, userId],
+      callback
+    );
   },
 
   saveUser: (userData, callback) => {
@@ -73,12 +98,19 @@ const userModel = {
       callback
     );
   },
-};
 
-updateFCMToken: (userId, fcmToken, callback) => {
-  const sql = `
-    UPDATE msuser SET fcmToken = ? WHERE UserID = ?`;
-  db.query(sql, [fcmToken, userId], callback);
+  updateFCMToken: (userId, fcmToken, callback) => {
+    const sql = `
+      UPDATE msuser SET fcmToken = ? WHERE UserID = ?`;
+    db.query(sql, [fcmToken, userId], callback);
+  },
+
+  deleteMember: (teamId, userId, callback) => {
+    const sql = `
+      DELETE FROM mscollaboration WHERE TeamTeamID = ? AND UserUserID = ?`;
+    db.query(sql, [teamId, userId], callback);
+  }
+
 };
 
 module.exports = userModel;

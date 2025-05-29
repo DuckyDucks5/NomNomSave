@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_se/view/update_product_page.dart';
-import 'package:flutter_se/view/product_page.dart';
+// import 'package:flutter_se/view/product_page.dart';
 
 class ViewProductCategory extends StatefulWidget {
   final String category;
@@ -24,17 +24,39 @@ class ViewProductCategory extends StatefulWidget {
 
 class _ViewProductCategoryState extends State<ViewProductCategory> {
   List<dynamic> productList = [];
-  String _sortOption = 'Expiration (Soonest)';
-  final List<String> sortOptions = [
-    'Expiration (Soonest)',
-    'Expiration (Latest)',
-    'Name (A-Z)',
-  ];
+  List<dynamic> filteredProductList = []; // Add this line
+  final TextEditingController _searchController =
+      TextEditingController(); // Add this line
+  String _sortOption = 'Closest';
+  final List<String> sortOptions = ['Closest', 'Farthest'];
 
   @override
   void initState() {
     super.initState();
     fetchProductList();
+    _searchController.addListener(_searchProducts); // Add this line
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Add this line
+    super.dispose();
+  }
+
+  void _searchProducts() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        filteredProductList = List.from(productList);
+      } else {
+        filteredProductList =
+            productList.where((product) {
+              return product['ProductName'].toString().toLowerCase().contains(
+                query,
+              );
+            }).toList();
+      }
+    });
   }
 
   Future<void> fetchProductList() async {
@@ -61,6 +83,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
       final List data = jsonDecode(response.body);
       setState(() {
         productList = data;
+        filteredProductList = List.from(data); // Add this line
       });
     } else {
       throw Exception('Failed to load products');
@@ -68,7 +91,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
   }
 
   Future<void> _deleteProduct(int productId) async {
-final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
     try {
@@ -76,9 +99,9 @@ final prefs = await SharedPreferences.getInstance();
       final response = await http.delete(
         url,
         headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
       if (response.statusCode == 200) {
         Navigator.push(
@@ -111,15 +134,15 @@ final prefs = await SharedPreferences.getInstance();
   Future<void> _markAsConsumed(int productId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    
+
     try {
       final url = Uri.parse('http://10.0.2.2:3000/mark-consumed/$productId');
       final response = await http.put(
         url,
         headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
       if (response.statusCode == 200) {
         fetchProductList(); // Refresh the list
@@ -167,7 +190,7 @@ final prefs = await SharedPreferences.getInstance();
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // tutup modal
+                  Navigator.pop(context, 'refresh'); // tutup modal
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -196,7 +219,7 @@ final prefs = await SharedPreferences.getInstance();
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // tutup modal
+                  Navigator.pop(context, 'refresh'); // tutup modal
                   _markAsConsumed(product['ProductID']);
                 },
                 child: const Text(
@@ -214,7 +237,7 @@ final prefs = await SharedPreferences.getInstance();
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // tutup modal
+                  Navigator.pop(context, 'refresh'); // tutup modal
                   _showDeleteConfirmation(context, product['ProductID']);
                 },
                 child: const Text(
@@ -225,7 +248,7 @@ final prefs = await SharedPreferences.getInstance();
               const SizedBox(height: 12),
               Center(
                 child: TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, 'refresh'),
                   child: const Text(
                     "Cancel",
                     style: TextStyle(
@@ -341,7 +364,7 @@ final prefs = await SharedPreferences.getInstance();
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, 'refresh');
           },
         ),
       ),
@@ -355,37 +378,61 @@ final prefs = await SharedPreferences.getInstance();
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
-                  decoration: const InputDecoration(
+                  controller: _searchController,
+                  decoration: InputDecoration(
                     hintText: 'Search Your Product',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 20,
+                    ),
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey.shade200,
+                    suffixIcon: const Icon(Icons.search, color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Sort by:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      setState(() {
+                        _sortOption = value;
+                        _sortProducts();
+                      });
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return sortOptions.map((String option) {
+                        return PopupMenuItem<String>(
+                          value: option,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 3,
+                                height: 24,
+                                color: _sortOption == option ? Colors.black : Colors.transparent,
+                                margin: const EdgeInsets.only(right: 8),
+                              ),
+                              Text(option),
+                            ],
+                          ),
+                        );
+                      }).toList();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text('Sort By', style: TextStyle(color: Color.fromARGB(255, 93, 93, 93))),
+                        SizedBox(width: 4),
+                        Icon(Icons.filter_list, color: Color.fromARGB(255, 93, 93, 93), size: 18),
+                      ],
                     ),
-                    DropdownButton<String>(
-                      value: _sortOption,
-                      onChanged: (value) {
-                        setState(() {
-                          _sortOption = value!;
-                          _sortProducts();
-                        });
-                      },
-                      items:
-                          sortOptions.map((String option) {
-                            return DropdownMenuItem<String>(
-                              value: option,
-                              child: Text(option),
-                            );
-                          }).toList(),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -394,12 +441,12 @@ final prefs = await SharedPreferences.getInstance();
             // Product list
             Expanded(
               child:
-                  productList.isEmpty
+                  filteredProductList.isEmpty
                       ? const Center(child: Text('No products found.'))
                       : ListView.builder(
-                        itemCount: productList.length,
+                        itemCount: filteredProductList.length,
                         itemBuilder: (context, index) {
-                          final product = productList[index];
+                          final product = filteredProductList[index];
                           final daysLeft = product['daysLeft'];
                           final addedBy = product['UserName'] ?? 'Unknown';
                           final formattedDate = product['FormattedExpiredDate'];
@@ -508,15 +555,13 @@ final prefs = await SharedPreferences.getInstance();
   }
 
   void _sortProducts() {
-    if (_sortOption == 'Expiration (Soonest)') {
-      productList.sort((a, b) => a['daysLeft'].compareTo(b['daysLeft']));
-    } else if (_sortOption == 'Expiration (Latest)') {
-      productList.sort((a, b) => b['daysLeft'].compareTo(a['daysLeft']));
-    } else if (_sortOption == 'Name (A-Z)') {
-      productList.sort(
-        (a, b) => a['ProductName'].toLowerCase().compareTo(
-          b['ProductName'].toLowerCase(),
-        ),
+    if (_sortOption == 'Closest') {
+      filteredProductList.sort(
+        (a, b) => a['daysLeft'].compareTo(b['daysLeft']),
+      );
+    } else if (_sortOption == 'Farthest') {
+      filteredProductList.sort(
+        (a, b) => b['daysLeft'].compareTo(a['daysLeft']),
       );
     }
   }

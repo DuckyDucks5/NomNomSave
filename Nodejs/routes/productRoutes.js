@@ -16,5 +16,6 @@ router.get("/count-products/:teamId", authenticateToken, productController.count
 router.get("/view-product-category/:userId/:categoryId/:teamId", authenticateToken, productController.viewProductCategory);
 router.put("/mark-consumed/:productId", authenticateToken, productController.markConsumed);
 
+router.put("/mark-expired", authenticateToken, productController.markExpired);
 
 module.exports = router;

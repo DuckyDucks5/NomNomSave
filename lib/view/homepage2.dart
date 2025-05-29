@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_se/view/history_page.dart';
+import 'package:flutter_se/view/view_product_page.dart';
+import 'package:flutter_se/view/view_profile_page.dart';
 import 'package:flutter_se/view/view_room_page.dart';
 import 'join_room_page.dart';
 import 'product_page.dart';
@@ -10,33 +12,36 @@ import 'dart:convert';
 import 'create_room_page.dart';
 
 class HomePage2 extends StatefulWidget {
-  const HomePage2({super.key});
+  final int initialIndex;
+  final int? initialRoomId;
+
+  const HomePage2({super.key, this.initialIndex = 0, this.initialRoomId});
 
   @override
   State<HomePage2> createState() => _HomePage2State();
 }
 
 class _HomePage2State extends State<HomePage2> {
-  int currentIndex = 0;
+  late int currentIndex;
   List<dynamic> roomList = [];
   List<dynamic> productSoonList = [];
   List<dynamic> recentlyAdded = [];
-  // String? token;
+  int userProfileIndex = 1;
 
   @override
   void initState() {
     super.initState();
+    currentIndex = widget.initialIndex;
     fetchRooms();
+    fetchUserProfile();
     fetchProductSoon();
     fetchRecentlyAdded();
+    fetchCheckExpired();
   }
 
   Future<void> fetchRooms() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    // setState(() {
-    //   String? token =
-    // });
     final userId = prefs.getInt('UserID');
 
     if (userId == null) {
@@ -63,6 +68,36 @@ class _HomePage2State extends State<HomePage2> {
     }
 
     print("Room list: $roomList");
+  }
+
+  Future<void> fetchUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
+
+    if (userId == null || token == null) return;
+
+    final url = Uri.parse('http://10.0.2.2:3000/view-profile/$userId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final data = decoded is List ? decoded[0] : decoded;
+
+      setState(() {
+        userProfileIndex = data['UserProfileIndex'] ?? 1;
+      });
+    } else {
+      throw Exception('Failed to load user profile');
+    }
+
+    print("User Profile Index home: $userProfileIndex");
   }
 
   Future<void> fetchProductSoon() async {
@@ -120,6 +155,25 @@ class _HomePage2State extends State<HomePage2> {
     print("recently added : $recentlyAdded");
   }
 
+  Future<void> fetchCheckExpired() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.put(
+      Uri.parse('http://10.0.2.2:3000/mark-expired'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("Expired products updated successfully.");
+    } else {
+      print("Failed to update expired products.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const orange = Color(0xFFFF8C42);
@@ -135,8 +189,9 @@ class _HomePage2State extends State<HomePage2> {
           fetchProductSoon();
           fetchRecentlyAdded();
         },
+        userProfileIndex: userProfileIndex,
       ),
-      const ProductPage(selectedRoomIndex: 0),
+      ProductPage(roomId: widget.initialRoomId ?? -1), // Pass initialRoomId
       const CalendarPage(),
       const HistoryPage(),
     ];
@@ -150,7 +205,7 @@ class _HomePage2State extends State<HomePage2> {
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
         ),
         child: BottomNavigationBar(
-          currentIndex: currentIndex,
+          currentIndex: currentIndex, // Add this line
           backgroundColor: Colors.transparent,
           selectedItemColor: Colors.white,
           unselectedItemColor: lightOrange,
@@ -189,6 +244,7 @@ class DashboardPage extends StatelessWidget {
   final List<dynamic> productSoonList;
   final List<dynamic> recentlyAdded;
   final VoidCallback onReload;
+  final int userProfileIndex;
 
   const DashboardPage({
     super.key,
@@ -196,6 +252,7 @@ class DashboardPage extends StatelessWidget {
     required this.productSoonList,
     required this.onReload,
     required this.recentlyAdded,
+    required this.userProfileIndex,
   });
 
   @override
@@ -206,15 +263,54 @@ class DashboardPage extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: ListView(
         children: [
-          const Text(
-            "Welcome, NomNomers!",
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                "Welcome, NomNomers!",
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Ganti `ProfilePage()` dengan halaman tujuan kamu
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProfilePage()),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.orange, // Warna border
+                      width: 2.0, // Ketebalan border
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2), // Warna bayangan
+                        spreadRadius: 0.4,
+                        blurRadius: 2,
+                        offset: Offset(0, 3), // Posisi bayangan
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: AssetImage(
+                      'assets/profileUser/profile_$userProfileIndex.jpg',
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           const Text(
             "My Room",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 8),
           SizedBox(
             height: 100,
@@ -340,42 +436,67 @@ class DashboardPage extends StatelessWidget {
             final name = product['ProductName'] as String;
             final teamName = product['TeamName'] as String;
             final rawDate = product['FormattedExpiredDate'] as String;
+            final teamId = product['TeamTeamID'];
+            final category = product['CategoryName'] as String;
+            final categoryId = product['ProductCategoryId'];
+
+            print("isi produk soon: $product");
+            print("isi teamId: $teamId");
+            print("isi category: $category");
+            print("isi categoryId: $categoryId");
 
             return Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.orangeAccent),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text("from $teamName's team"),
-                        ],
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => ViewProductCategory(
+                              category: category,
+                              teamId: teamId,
+                              categoryId: categoryId,
+                            ),
                       ),
-                      Text(
-                        rawDate,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.orangeAccent),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text("from $teamName's team"),
+                          ],
+                        ),
+                        Text(
+                          rawDate,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
               ],
             );
-          }), //.toList(),
+          }),
           const SizedBox(height: 10),
           const Divider(),
           const Text(
@@ -456,27 +577,57 @@ class DashboardPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       backgroundColor: Colors.transparent,
                       side: BorderSide(color: orange),
-                      minimumSize: const Size(0, 24), // adjust height
+                      minimumSize: const Size(0, 24),
                     ),
                     onPressed: () {
-                      Navigator.push(
+                      // final homeState =
+                      //     context.findAncestorStateOfType<_HomePage2State>();
+                      // if (homeState != null) {
+                      final roomId = product['TeamID'];
+                      //   // int selectedRoomIndex = 10;
+
+                      //   // if (roomId != null && roomId != -1) {
+                      //   //   selectedRoomIndex = homeState.roomList.indexWhere(
+                      //   //     (room) => room['TeamID'] == roomId,
+                      //   //   );
+                      //   //   selectedRoomIndex =
+                      //   //       selectedRoomIndex == -1 ? 0 : selectedRoomIndex;
+                      //   // }
+
+                      //   // print(
+                      //   //   "Selected Room Index ke product: $selectedRoomIndex",
+                      //   // );
+                      //   print("Room ID ke product: $roomId");
+                      //   // Update pages with new ProductPage instance
+                      //   final newPages = [
+                      //     // ...existing DashboardPage...
+                      //     ProductPage(roomId: roomId),
+                      //     // ...existing other pages...
+                      //   ];
+
+                      //   homeState.setState(() {
+                      //     homeState.currentIndex = 1;
+                      //   });
+                      // }
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => ProductPage(
-                                selectedRoomIndex: -1,
-                                roomId:
-                                    int.tryParse(
-                                      product['TeamID'].toString(),
-                                    ) ??
-                                    0,
+                              (context) => HomePage2(
+                                initialIndex:
+                                    1, // Set initial index ke ProductPage
+                                initialRoomId: roomId, // Pass roomId
                               ),
                         ),
+                        (Route<dynamic> route) => false,
                       );
                     },
                     child: Text(
                       "View Detail",
-                      style: TextStyle(color: orange, fontSize: 10),
+                      style: TextStyle(
+                        color: const Color.fromRGBO(255, 140, 66, 1),
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                 ],
