@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "2745131056",
+    "project_id": "nomnomsavese1-ef1e1",
+    "storage_bucket": "nomnomsavese1-ef1e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2745131056:android:50f9f33808ad3436f1cdf5",
+        "android_client_info": {
+          "package_name": "com.example.flutter_se"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQskdzUKF3WQOzg6N_2XLxboN1LxS91hY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
