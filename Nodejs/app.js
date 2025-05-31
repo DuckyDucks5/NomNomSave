@@ -1,6 +1,6 @@
 // require('dotenv').config();
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config();
 // ...existing code...
 require('./jobs/expiredJob');
 
@@ -18,7 +18,7 @@ const calendarRoutes = require("./routes/calendarRoutes");
 const productRoutes = require("./routes/productRoutes");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -46,6 +46,6 @@ app.use("/", calendarRoutes);
 
 // Start Server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at: ${port}`);
   console.log("Cron jobs initialized...");
 });
