@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 29, 2025 at 09:47 AM
+-- Generation Time: May 31, 2025 at 11:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -102,7 +102,7 @@ INSERT INTO `msproduct` (`ProductID`, `ProductName`, `ExpiredDate`, `UserUserID`
 (8, 'Yogurt', '2025-05-31', 14, 15, 4, 0),
 (9, 'Telurr', '2025-05-31', 13, 15, 4, 3),
 (11, 'bread', '2025-05-25', 13, 15, 1, 2),
-(12, 'apple', '2025-05-30', 13, 12, 2, 1),
+(12, 'apple', '2025-05-30', 13, 12, 2, 2),
 (13, 'ayam', '2025-05-31', 13, 12, 5, 3),
 (14, 'ikan', '2025-06-04', 13, 12, 5, 1),
 (15, 'permen', '2025-08-02', 13, 12, 6, 1),
@@ -194,27 +194,28 @@ CREATE TABLE `msuser` (
   `ResetTokenExpiry` bigint(20) DEFAULT NULL,
   `fcmToken` text DEFAULT NULL,
   `IsVerified` tinyint(1) DEFAULT 0,
-  `LastVerificationSentAt` bigint(20) DEFAULT NULL
+  `LastVerificationSentAt` bigint(20) DEFAULT NULL,
+  `IsLoggedIn` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `msuser`
 --
 
-INSERT INTO `msuser` (`UserID`, `UserName`, `UserEmail`, `UserPassword`, `UserPhoneNumber`, `UserProfileIndex`, `ResetToken`, `ResetTokenExpiry`, `fcmToken`, `IsVerified`, `LastVerificationSentAt`) VALUES
-(1, 'testuser', 'test@example.com', '$2b$10$pKsB2WIM4/r2EoiI4r/hCuIlAGWhTk9fhpHeUSmMSE3', '1234567890', 0, NULL, NULL, NULL, 0, NULL),
-(3, 'jessica', 'jess123', '$2b$10$pVCT54yNbEoBy706mSuAi.fhN41BCNXJV/sH/.0gcwP', '1234567890', 0, NULL, NULL, NULL, 0, NULL),
-(5, 'ryn', 'ryn@gmail.com', '123', '0123', 0, NULL, NULL, NULL, 0, NULL),
-(6, 'admin', 'admin', '123', '123', 0, NULL, NULL, NULL, 0, NULL),
-(7, 'yura jessica', 'akubisa@gmail.com', '123', '08231', 1, NULL, NULL, NULL, 0, NULL),
-(8, 'jessica bella', '2005jessicabella@gmail.com', '7654321', '0813', 0, NULL, NULL, NULL, 0, NULL),
-(10, 'jennie bella', 'bellsjs@gmail.com', '$2b$10$k/SYxWP.BFI08FvvbAKfp.mzHiEqU86sQ06WOmjoFPj', '08123', 0, NULL, NULL, NULL, 0, NULL),
-(11, 'jisoo bella', 'bellsjsss@gmail.com', '$2b$13$VE93.FfuLk2gloe2b8E1bOLN4pCfyYsggPolm5biwGj', '0812fsdf3', 0, NULL, NULL, NULL, 0, NULL),
-(12, 'roje bella', 'siapa@gmail.com', '$2b$13$vlHSA4h4M4IRhBmAnt17Keh42l2y244TufY.jpi1sBp', '623434', 0, NULL, NULL, NULL, 0, NULL),
-(13, 'rynrynnn', 'auryn', '123', '0812', 2, NULL, NULL, NULL, 1, NULL),
-(14, 'Vania', 'vania@gmail.com', '123', '081111111111', 1, NULL, NULL, NULL, 0, NULL),
-(17, 'aurynn', 'aurynvania@gmail.com', '123', '123', 1, NULL, NULL, NULL, 0, NULL),
-(19, 'vania', 'winatanryn@gmail.com', '123', '08', 1, NULL, NULL, NULL, 1, NULL);
+INSERT INTO `msuser` (`UserID`, `UserName`, `UserEmail`, `UserPassword`, `UserPhoneNumber`, `UserProfileIndex`, `ResetToken`, `ResetTokenExpiry`, `fcmToken`, `IsVerified`, `LastVerificationSentAt`, `IsLoggedIn`) VALUES
+(1, 'testuser', 'test@example.com', '$2b$10$pKsB2WIM4/r2EoiI4r/hCuIlAGWhTk9fhpHeUSmMSE3', '1234567890', 0, NULL, NULL, NULL, 0, NULL, 0),
+(3, 'jessica', 'jess123', '$2b$10$pVCT54yNbEoBy706mSuAi.fhN41BCNXJV/sH/.0gcwP', '1234567890', 0, NULL, NULL, NULL, 0, NULL, 0),
+(5, 'ryn', 'ryn@gmail.com', '123', '0123', 0, NULL, NULL, NULL, 0, NULL, 0),
+(6, 'admin', 'admin', '123', '123', 0, NULL, NULL, NULL, 0, NULL, 0),
+(7, 'yura jessica', 'akubisa@gmail.com', '123', '08231', 1, NULL, NULL, NULL, 0, NULL, 0),
+(8, 'jessica bella', '2005jessicabella@gmail.com', '7654321', '0813', 0, NULL, NULL, NULL, 1, NULL, 0),
+(10, 'jennie bella', 'bellsjs@gmail.com', '$2b$10$k/SYxWP.BFI08FvvbAKfp.mzHiEqU86sQ06WOmjoFPj', '08123', 0, NULL, NULL, NULL, 0, NULL, 0),
+(11, 'jisoo bella', 'bellsjsss@gmail.com', '$2b$13$VE93.FfuLk2gloe2b8E1bOLN4pCfyYsggPolm5biwGj', '0812fsdf3', 0, NULL, NULL, NULL, 0, NULL, 0),
+(12, 'roje bella', 'siapa@gmail.com', '$2b$13$vlHSA4h4M4IRhBmAnt17Keh42l2y244TufY.jpi1sBp', '623434', 0, NULL, NULL, NULL, 0, NULL, 0),
+(13, 'rynrynnn', 'auryn', '123', '0812', 2, NULL, NULL, 'deccDaa3RYC_EEg8l9w81T:APA91bHQqpmaVhJNQ2dvkhCj18WiXPfLP3kYOtxvOahChmb7vyFhyjyWuobq0c0LV9EwXR-LevY2E0e23pAP-Jz6TWZEVlbg4PfxMPL13OtvekGWm-cVok4', 1, NULL, 1),
+(14, 'Vania', 'vania@gmail.com', '123', '081111111111', 1, NULL, NULL, NULL, 0, NULL, 0),
+(17, 'aurynn', 'aurynvania@gmail.com', '123', '123', 1, NULL, NULL, NULL, 0, NULL, 0),
+(19, 'vania', 'winatanryn@gmail.com', '123', '08', 1, NULL, NULL, NULL, 1, NULL, 0);
 
 --
 -- Indexes for dumped tables
