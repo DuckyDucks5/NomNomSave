@@ -10,7 +10,6 @@ const calendarModel = {
         FROM msproduct p JOIN msteam mt ON p.TeamTeamID = mt.TeamID
         JOIN mscollaboration mc ON p.TeamTeamID = mc.TeamTeamID  
         WHERE mc.UserUserID = ? 
-        AND p.ProductStatus = 1
         AND DATE(p.ExpiredDate) >= ?
         ORDER BY p.ExpiredDate;
         `;
@@ -22,7 +21,7 @@ const calendarModel = {
         SELECT DISTINCT DATE (mp.ExpiredDate) AS ExpiredDate FROM msproduct mp
         JOIN msteam t ON mp.TeamTeamID = t.TeamID
         JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID 
-        WHERE mc.UserUserID = ? AND MONTH(mp.ExpiredDate) = ? AND YEAR(mp.ExpiredDate) = ? AND mp.ProductStatus = 1
+        WHERE mc.UserUserID = ? AND MONTH(mp.ExpiredDate) = ? AND YEAR(mp.ExpiredDate) = ?
         ORDER BY ExpiredDate;
         `;
         db.query(sql, [userId, month, year], callback);

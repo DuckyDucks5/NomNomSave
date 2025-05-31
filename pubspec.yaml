@@ -42,6 +42,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   pin_code_fields: ^8.0.0
+  flutter_local_notifications: ^18.0.1
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +94,11 @@ flutter:
     - assets/profileUser/profile_5.jpg
     - assets/profileUser/profile_6.jpg
     - assets/logo.png
+  fonts:
+    - family: SF
+      fonts:
+        - asset: assets/fonts/SF-Pro-Display-Medium.ttf
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

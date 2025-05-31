@@ -106,16 +106,16 @@ const productModel = {
     db.query(sql, [`%${partialSearch}%`, userId], callback);
   },
 
-  searchProductByExpiredDate: (expireDate) => {
+  searchProductByExpiredDate: (userId, expireDate) => {
     return new Promise((resolve, reject) => {
       const sql = `
-            SELECT p.ProductID, p.ProductName, p.ExpiredDate, p.UserUserID, u.fcmToken, t.TeamName
-            FROM msproduct p
-            JOIN msuser u ON p.UserUserID = u.UserID
-            JOIN msteam t ON p.TeamTeamID = t.TeamID
-            WHERE DATE(p.ExpiredDate) = ?
+          SELECT mp.ProductID, mp.ProductName, mp.ExpiredDate, mp.UserUserID, mu.fcmToken, mt.TeamName
+          FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
+          JOIN  msuser mu ON mp.UserUserID = mu.UserID
+          JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID  
+          WHERE mc.UserUserID = ? AND DATE(mp.ExpiredDate) = ?
             `;
-      db.query(sql, [expireDate], (err, results) => {
+      db.query(sql, [userId, expireDate], (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });

@@ -40,7 +40,7 @@ exports.login = (req, res) => {
       return res.status(401).json({ message: "Please verify your account!" });
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET; //INI
+    const JWT_SECRET = process.env.JWT_SECRET;
     const token = jwt.sign(
       { userId: user.UserID, email: user.UserEmail },
       JWT_SECRET
@@ -52,33 +52,45 @@ exports.login = (req, res) => {
       //sameSite: "strict"
     });
 
-    roomModel.getUserRooms(user.UserID, (err, roomResults) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ message: "Server error while fetching rooms" });
+    userModel.updateLogInStatus(user.UserID, (updateErr) => {
+      if (updateErr) {
+        console.error("Failed to update login status:", updateErr);
       }
 
-      const hasRoom = roomResults.length > 0;
+      roomModel.getUserRooms(user.UserID, (err, roomResults) => {
+        if (err) {
+          return res
+            .status(500).json({ message: "Server error while fetching rooms" });
+        }
 
-      return res.status(200).json({
-        message: "Login successful",
-        user,
-        hasRoom,
-        room: roomResults,
-        token,
+        const hasRoom = roomResults.length > 0;
+
+        return res.status(200).json({
+          message: "Login successful",
+          user,
+          hasRoom,
+          room: roomResults,
+          token,
+        });
       });
     });
   });
 };
 
 exports.logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    //sameSite: "strict"
-  });
-  res.status(200).json({ message: "Log Out Successfull." });
+  const userId = req.user.userId;
+  userModel.updateLogOutStatus(userId, (err) => {
+      if (err) {
+        console.error("Failed to update logout status:", err);
+      }
+
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        //sameSite: "strict"
+      });
+      return res.status(200).json({ message: "Log Out Successful." });
+    });
 };
 
 // -------------------- REGISTER USER --------------------

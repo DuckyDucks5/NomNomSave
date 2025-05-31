@@ -36,7 +36,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _initialize() async {
     final prefs = await SharedPreferences.getInstance();
-    //final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
     if (token != null) {
@@ -98,7 +97,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadEventsForDay(DateTime day) async {
     final prefs = await SharedPreferences.getInstance();
-    //final userId = prefs.getInt('UserID');
+
     final token = prefs.getString('token');
     if (token == null) return;
 
@@ -233,7 +232,9 @@ class _CalendarPageState extends State<CalendarPage> {
                 const Text("No products expiring on this date.")
               else
                 _buildExpiringBox(
-                  title: "Products Expiring Today",
+                  title: isSameDay(selected, DateTime.now())
+                    ? "Products Expiring Today"
+                    : "Products Expiring",
                   items: todayItems,
                 ),
             ],

@@ -7,6 +7,16 @@ const userModel = {
     db.query(sql, [fullName, email, phone, password], callback);
   },
 
+  updateLogInStatus: (userId, callback) => {
+    const sql = "UPDATE msuser SET IsLoggedIn = true WHERE UserID = ?";
+    db.query(sql, [userId], callback)
+  },
+
+  updateLogOutStatus: (userId, callback) => {
+    const sql = "UPDATE msuser SET IsLoggedIn = false WHERE UserID = ?";
+    db.query(sql, [userId], callback)
+  },
+  
   getUserByEmail: (email, callback) => {
     const sql = "SELECT * FROM msuser WHERE UserEmail = ?";
     db.query(sql, [email], callback);
