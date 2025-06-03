@@ -17,7 +17,7 @@ class _CodePasswordPageState extends State<CodePasswordPage> {
   TextEditingController otpController = TextEditingController();
 
   Future<void> _reSendVerificationCode(String email) async {
-    final url = Uri.parse('http://10.0.2.2:3000/resend-verify-code');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/resend-verify-code');
 
     try {
       final response = await http.post(
@@ -50,7 +50,7 @@ class _CodePasswordPageState extends State<CodePasswordPage> {
   }
 
   Future<void> _VerifyCode(String email, String code) async {
-    final url = Uri.parse('http://10.0.2.2:3000/verify-code');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/verify-code');
 
     try {
       final response = await http.post(
@@ -93,6 +93,7 @@ class _CodePasswordPageState extends State<CodePasswordPage> {
     final Color orange = Colors.orange;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

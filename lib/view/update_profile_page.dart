@@ -29,7 +29,24 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
 
     if (userId == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-profile/$userId');
+    if(nameController.text.length < 3 || nameController.text.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Full name must be between 3 and 10 characters!")),
+      );
+      return;
+    }
+
+
+    if(phoneController.text.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Phone number must be at least 10 digits!")),
+      );
+      return;
+    }
+
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/view-profile/$userId',
+    );
     final response = await http.get(
       url,
       headers: {
@@ -48,9 +65,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         phoneController.text = data['UserPhoneNumber'] ?? '';
 
         // Set default to 1 if index is null or 0
-        selectedImageIndex = (data['UserImageIndex'] != null && data['UserImageIndex'] != 0)
-            ? data['UserImageIndex']
-            : 1;
+        selectedImageIndex =
+            (data['UserProfileIndex'] != null && data['UserProfileIndex'] != 0)
+                ? data['UserProfileIndex']
+                : 1;
       });
     } else {
       throw Exception('Failed to load user profile');
@@ -64,7 +82,9 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
 
     if (userId == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/update-profile/$userId');
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/update-profile/$userId',
+    );
     final response = await http.put(
       url,
       headers: {
@@ -83,7 +103,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
       );
-       Navigator.pushNamed(context, '/viewProfile');
+      Navigator.pushNamed(context, '/viewProfile');
     } else {
       ScaffoldMessenger.of(
         context,
@@ -108,9 +128,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/viewProfile');
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(32),
@@ -132,7 +156,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                         border: Border.all(color: Colors.orange, width: 2),
                         image: DecorationImage(
                           image: AssetImage(
-                            'assets/profileUser/profile_${selectedImageIndex ?? 1}.jpg',
+                            'assets/profileUser/profile_$selectedImageIndex.jpg',
                           ),
                           fit: BoxFit.cover,
                         ),
@@ -175,7 +199,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             Center(
               child: ElevatedButton.icon(
                 onPressed: updateUserProfile,
-                icon: const Icon(Icons.check),
                 label: const Text("Done"),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
@@ -250,7 +273,8 @@ class ProfilePicturePickerPage extends StatelessWidget {
           mainAxisSpacing: 16,
         ),
         itemBuilder: (context, index) {
-          final imageIndex = index + 1; // Images are named profile_1.jpg, profile_2.jpg, etc.
+          final imageIndex =
+              index + 1; // Images are named profile_1.jpg, profile_2.jpg, etc.
           return GestureDetector(
             onTap: () {
               Navigator.pop(context, imageIndex); // Return index (0–5)
@@ -260,7 +284,9 @@ class ProfilePicturePickerPage extends StatelessWidget {
                 border: Border.all(color: Colors.orange, width: 2),
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: AssetImage('assets/profileUser/profile_$imageIndex.jpg'),
+                  image: AssetImage(
+                    'assets/profileUser/profile_$imageIndex.jpg',
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),

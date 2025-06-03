@@ -6,7 +6,7 @@ const calendarModel = {
         const sql = `
         SELECT 
         p.ProductName, p.ExpiredDate, 
-        mt.TeamName AS RoomName 
+        mt.TeamName AS RoomName, p.ProductStatus 
         FROM msproduct p JOIN msteam mt ON p.TeamTeamID = mt.TeamID
         JOIN mscollaboration mc ON p.TeamTeamID = mc.TeamTeamID  
         WHERE mc.UserUserID = ? 

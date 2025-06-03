@@ -46,7 +46,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse('http://10.0.2.2:3000/get-room-name/$enteredCode');
+      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/get-room-name/$enteredCode');
       
       final response = await http.get(
       url,
@@ -104,7 +104,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
     });
 
     try {
-      final url = Uri.parse('http://10.0.2.2:3000/join-room');
+      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/join-room');
 
       final response = await http.post(
         url,
@@ -152,6 +152,8 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         toolbarHeight: 90,
         title: const Text(
@@ -164,7 +166,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        elevation: 1,
+        // elevation: 1,
       ),
       body: Stack(
         children: [

@@ -14,7 +14,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
   TextEditingController emailController = TextEditingController();
 
   Future<void> _sendVerificationCode(String email) async {
-    final url = Uri.parse('http://10.0.2.2:3000/forgot-password');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/forgot-password');
 
     try {
       final response = await http.post(
@@ -55,6 +55,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
     final Color orange = Colors.orange;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

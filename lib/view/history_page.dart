@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -17,16 +18,11 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    // refreshHistory();
-    fetchHistoryProduct();// Panggil refresh saat halaman pertama kali muncul
+    fetchHistoryProduct();
   }
 
   Future<void> refreshHistory() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    await fetchHistoryProduct(); 
+    await fetchHistoryProduct();
   }
 
   Future<void> fetchHistoryProduct() async {
@@ -34,11 +30,10 @@ class _HistoryPageState extends State<HistoryPage> {
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
-    if (userId == null) {
-      return;
-    }
+    if (userId == null || token == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/history-product/$userId');
+    final url = Uri.parse(
+        'https://nomnomsave-be-se-production.up.railway.app/history-product/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -61,35 +56,38 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    Navigator.of(context).pop();
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Container(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding:
+                const EdgeInsets.only(top: 30, right: 16, left: 16, bottom: 16),
             child: isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: Colors.orange))
                 : productList.isEmpty
                     ? const Center(child: Text('No products found.'))
                     : RefreshIndicator(
+                        color: Colors.orange,
                         onRefresh: refreshHistory,
                         child: ListView.builder(
                           itemCount: productList.length + 1,
                           itemBuilder: (context, index) {
                             if (index == 0) {
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 8, bottom: 16),
                                 child: Row(
                                   children: [
-                                    // IconButton(
-                                    //   icon: const Icon(Icons.arrow_back),
-                                    //   onPressed: () => Navigator.pop(context),
-                                    // ),
-                                    const SizedBox(width: 8),
-                                    const Text(
+                                    SizedBox(width: 8),
+                                    Text(
                                       'Product History',
                                       style: TextStyle(
                                         fontSize: 20,
@@ -100,6 +98,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 ),
                               );
                             }
+
                             final product = productList[index - 1];
                             final productStatus = product['ProductStatus'];
                             final formattedDate = product['ExpiredDate'];

@@ -32,6 +32,13 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    if(_fullNameController.text.length < 3 || _fullNameController.text.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Full name must be between 3 and 10 characters!")),
+      );
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -41,8 +48,15 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    if(_phoneController.text.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Phone number must be at least 10 digits!")),
+      );
+      return;
+    }
+
     final url = Uri.parse(
-      'http://10.0.2.2:3000/register',
+      'https://nomnomsave-be-se-production.up.railway.app/register',
     ); // Gunakan 'localhost' jika di browser
     final response = await http.post(
       url,
@@ -57,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Registration successful! Please login.")),
+        const SnackBar(content: Text("Registration successful! Please Verify your email.")),
       );
       Navigator.pop(context); // Kembali ke halaman login
     } else {
@@ -74,6 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 50),
@@ -206,7 +221,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

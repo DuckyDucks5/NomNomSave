@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_se/main.dart';
 
 class NotificationService {
-
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -22,9 +21,7 @@ class NotificationService {
     if (_isInitialized) {
       return;
     }
-    const initSettingsAndroid = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+    const initSettingsAndroid = AndroidInitializationSettings('notif_icon');
 
     const initSettings = InitializationSettings(android: initSettingsAndroid);
 
@@ -35,11 +32,13 @@ class NotificationService {
   NotificationDetails notificationDetails() {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
-        'daily_channel_id',
-        'daily notification',
+        'new_channel_id',
+        'Updated daily notification',
         channelDescription: 'daily notif channel',
         importance: Importance.max,
         priority: Priority.high,
+        playSound: true,
+        ticker: 'ticker',
       ),
     );
   }
@@ -49,12 +48,7 @@ class NotificationService {
     String? title,
     String? body,
   }) async {
-    return notificationPlugin.show(
-      id,
-      title,
-      body,
-      notificationDetails(),
-    );
+    return notificationPlugin.show(id, title, body, notificationDetails());
   }
 
   Future<void> setupFCM(String userId) async {
@@ -69,7 +63,9 @@ class NotificationService {
         final token = prefs.getString('token');
 
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:3000/save-fcm-token'),
+          Uri.parse(
+            'https://nomnomsave-be-se-production.up.railway.app/save-fcm-token',
+          ),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
@@ -106,26 +102,36 @@ class FirebaseApi {
 
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       print('Received a message in foreground: ${message.messageId}');
 
       final notification = message.notification;
       if (notification != null) {
         final android = notification.android;
-          if (android != null) {
-            await NotificationService().showNotification(
+        if (android != null) {
+          await NotificationService().showNotification(
             id: notification.hashCode,
             title: notification.title,
             body: notification.body,
           );
         }
-     }
+      }
     });
   }
 
-  void handleMessage(RemoteMessage? message) {
+  void handleMessage(RemoteMessage? message) async {
     if (message == null) return;
 
-    navigatorKey.currentState?.pushNamed('/home', arguments: message);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getInt('UserID');
+    final loginStatus = prefs.getBool('isLoggedIn');
+
+    if (token == null || loginStatus == false) {
+      navigatorKey.currentState?.pushNamed('/');
+    }
+    else{
+       navigatorKey.currentState?.pushNamed('/home', arguments: message);
+    }
+   
   }
 }

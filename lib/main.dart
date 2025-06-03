@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_se/view/add_product_page.dart';
 import 'package:flutter_se/view/create_room_page.dart';
 import 'package:flutter_se/view/enter_email.dart';
@@ -18,10 +19,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp();
 
   final prefs = await SharedPreferences.getInstance();
@@ -41,8 +41,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarBrightness: Brightness.dark,
+      ),
+    );
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'NomNomSave',
       theme: ThemeData(
         fontFamily: 'SF',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

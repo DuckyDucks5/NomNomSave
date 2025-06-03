@@ -86,7 +86,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'http://10.0.2.2:3000/get-member-room/${widget.teamId}',
+        'https://nomnomsave-be-se-production.up.railway.app/get-member-room/${widget.teamId}',
       );
       final response = await http.get(
         url,
@@ -127,7 +127,7 @@ class _RoomPageState extends State<RoomPage> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse(('http://10.0.2.2:3000/get-member-room/$roomId'));
+      final url = Uri.parse(('https://nomnomsave-be-se-production.up.railway.app/get-member-room/$roomId'));
       final response = await http.get(
         url,
         headers: {
@@ -159,7 +159,7 @@ class _RoomPageState extends State<RoomPage> {
   Future<void> _loadProductOverview(int teamId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    final url = Uri.parse('http://10.0.2.2:3000/overview-product-room/$teamId');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/overview-product-room/$teamId');
     final response = await http.get(
       url,
       headers: {
@@ -184,7 +184,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'http://10.0.2.2:3000/delete-room/${widget.teamId}',
+        'https://nomnomsave-be-se-production.up.railway.app/delete-room/${widget.teamId}',
       );
       final response = await http.delete(
         url,
@@ -219,7 +219,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'http://10.0.2.2:3000/leave-room/${widget.teamId}/$currentUserId',
+        'https://nomnomsave-be-se-production.up.railway.app/leave-room/${widget.teamId}/$currentUserId',
       );
       final response = await http.delete(
         url,
@@ -254,7 +254,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'http://10.0.2.2:3000/delete-member/${widget.teamId}/$userId',
+        'https://nomnomsave-be-se-production.up.railway.app/delete-member/${widget.teamId}/$userId',
       );
       final response = await http.delete(
         url,
@@ -297,6 +297,8 @@ class _RoomPageState extends State<RoomPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white, // Prevents color change during scroll
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -307,7 +309,6 @@ class _RoomPageState extends State<RoomPage> {
             );
           },
         ),
-        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
@@ -319,71 +320,75 @@ class _RoomPageState extends State<RoomPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 40),
-          _buildMemberPreview(context),
-          const SizedBox(height: 20),
-          _buildRoomDescription(),
-          const SizedBox(height: 8),
-          const Divider(),
-          const SizedBox(height: 8),
-          _buildProductHeader(context),
-          const SizedBox(height: 10),
+      body: Container(
+        color: Colors.white, // Ensures white background throughout scroll
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          physics: const BouncingScrollPhysics(), // Better scroll behavior
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 40),
+            _buildMemberPreview(context),
+            const SizedBox(height: 20),
+            _buildRoomDescription(),
+            const SizedBox(height: 8),
+            const Divider(),
+            const SizedBox(height: 8),
+            _buildProductHeader(context),
+            const SizedBox(height: 10),
 
-          // Product list dynamic
-          ...productList.map((product) {
-            final name = product['ProductName'] as String;
-            final addedBy = product['UserName'] as String;
-            final rawDate = product['FormattedExpiredDate'] as String;
+            // Product list dynamic
+            ...productList.map((product) {
+              final name = product['ProductName'] as String;
+              final addedBy = product['UserName'] as String;
+              final rawDate = product['FormattedExpiredDate'] as String;
 
-            return Column(
+              return Column(
+                children: [
+                  _buildProductTile(
+                    name: name,
+                    addedBy:
+                        currentUserId.toString() ==
+                                product['UserUserID'].toString()
+                            ? "You"
+                            : addedBy,
+                    date: rawDate,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              );
+            }),
+
+            const SizedBox(height: 30),
+            Row(
               children: [
-                _buildProductTile(
-                  name: name,
-                  addedBy:
-                      currentUserId.toString() ==
-                              product['UserUserID'].toString()
-                          ? "You"
-                          : addedBy,
-                  date: rawDate,
+                Expanded(
+                  child: _buildActionButton("Update Room", orange, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => UpdatePage(
+                              teamId: widget.teamId,
+                              teamName: widget.teamName,
+                              teamProfileIndex: widget.teamProfileIndex,
+                              teamDescription: widget.teamDescription,
+                            ),
+                      ),
+                    );
+                  }),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildActionButton("Delete Room", orange, () {
+                    _showDeleteRoomConfirmation(context);
+                  }),
+                ),
               ],
-            );
-          }), //.toList(),
-
-          const SizedBox(height: 30),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton("Update Room", orange, () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => UpdatePage(
-                            teamId: widget.teamId,
-                            teamName: widget.teamName,
-                            teamProfileIndex: widget.teamProfileIndex,
-                            teamDescription: widget.teamDescription,
-                          ),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildActionButton("Delete Room", orange, () {
-                  _showDeleteRoomConfirmation(context);
-                }),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
-        ],
+            ),
+            const SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }
@@ -397,6 +402,7 @@ class _RoomPageState extends State<RoomPage> {
       ),
       const SizedBox(height: 10),
       Container(
+        
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black, width: 2),
@@ -443,7 +449,7 @@ class _RoomPageState extends State<RoomPage> {
                       2,
                     ), // Untuk memberi jarak antara border dan avatar
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1),
+                      border: Border.all(color: Colors.orange, width: 1),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: CircleAvatar(

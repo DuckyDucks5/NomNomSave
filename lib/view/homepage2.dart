@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'create_room_page.dart';
+import 'package:flutter/services.dart';
 
 class HomePage2 extends StatefulWidget {
   final int initialIndex;
@@ -48,7 +49,7 @@ class _HomePage2State extends State<HomePage2> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-room/$userId');
 
     final response = await http.get(
       url,
@@ -77,7 +78,7 @@ class _HomePage2State extends State<HomePage2> {
 
     if (userId == null || token == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-profile/$userId');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-profile/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -105,7 +106,7 @@ class _HomePage2State extends State<HomePage2> {
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
-    final url = Uri.parse('http://10.0.2.2:3000/overview-product-home/$userId');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/overview-product-home/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -133,7 +134,7 @@ class _HomePage2State extends State<HomePage2> {
     final token = prefs.getString('token');
 
     final url = Uri.parse(
-      'http://10.0.2.2:3000/recently-added-product/$userId',
+      'https://nomnomsave-be-se-production.up.railway.app/recently-added-product/$userId',
     );
     final response = await http.get(
       url,
@@ -160,7 +161,7 @@ class _HomePage2State extends State<HomePage2> {
     final token = prefs.getString('token');
 
     final response = await http.put(
-      Uri.parse('http://10.0.2.2:3000/mark-expired'),
+      Uri.parse('https://nomnomsave-be-se-production.up.railway.app/mark-expired'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -172,6 +173,12 @@ class _HomePage2State extends State<HomePage2> {
     } else {
       print("Failed to update expired products.");
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    // Directly exit the app when back is pressed
+    SystemNavigator.pop();
+    return false;
   }
 
   @override
@@ -196,43 +203,46 @@ class _HomePage2State extends State<HomePage2> {
       const HistoryPage(),
     ];
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: IndexedStack(index: currentIndex, children: pages),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: orange,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex, // Add this line
-          backgroundColor: Colors.transparent,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: lightOrange,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          onTap: (index) {
-            setState(() {
-              currentIndex = index;
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: IndexedStack(index: currentIndex, children: pages),
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: orange,
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: currentIndex, // Add this line
+            backgroundColor: Colors.transparent,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: lightOrange,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            type: BottomNavigationBarType.fixed,
+            elevation: 0,
+            onTap: (index) {
+              setState(() {
+                currentIndex = index;
 
-              if (index == 0) {
-                fetchRooms();
-                fetchProductSoon();
-                fetchRecentlyAdded();
-              }
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.list), label: ''),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: '',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
-          ],
+                if (index == 0) {
+                  fetchRooms();
+                  fetchProductSoon();
+                  fetchRecentlyAdded();
+                }
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+              BottomNavigationBarItem(icon: Icon(Icons.list), label: ''),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today),
+                label: '',
+              ),
+              BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
+            ],
+          ),
         ),
       ),
     );
@@ -259,379 +269,385 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     const orange = Color(0xFFFF8C42);
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ListView(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "Welcome, NomNomers!",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              GestureDetector(
-                onTap: () {
-                  // Ganti `ProfilePage()` dengan halaman tujuan kamu
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()),
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.orange, // Warna border
-                      width: 2.0, // Ketebalan border
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2), // Warna bayangan
-                        spreadRadius: 0.4,
-                        blurRadius: 2,
-                        offset: Offset(0, 3), // Posisi bayangan
+    return RefreshIndicator(
+      color: orange,
+      onRefresh: () async {
+        onReload();
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "Welcome, NomNomers!",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.orange, 
+                        width: 2.0, 
                       ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundImage: AssetImage(
-                      'assets/profileUser/profile_$userProfileIndex.jpg',
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2), 
+                          spreadRadius: 0.4,
+                          blurRadius: 2,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: AssetImage(
+                        'assets/profileUser/profile_$userProfileIndex.jpg',
+                      ),
                     ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "My Room",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: roomList.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < roomList.length) {
+                    final room = roomList[index];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ViewRoom(
+                                  teamId: room['TeamID'],
+                                  teamName: room['TeamName'],
+                                  teamProfileIndex: room['TeamProfileIndex'],
+                                  teamDescription: room['TeamDescription'],
+                                  teamCode: room['RoomCode'],
+                                ),
+                          ),
+                        );
+                        onReload();
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                'assets/profileRoom/profile_${room['TeamProfileIndex'] ?? 1}.jpeg',
+                                width: 72,
+                                height: 72,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              width: 80,
+                              child: Text(
+                                room['TeamName'] ?? 'Room',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    return GestureDetector(
+                      onTap: () async {
+                        await showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          builder: (BuildContext context) {
+                            return const CreateJoinRoomModal();
+                          },
+                        );
+                        onReload();
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.black),
+                              ),
+                              child: const Icon(Icons.add, size: 30),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              "add new",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "My Room",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const Text(
+              "Expired Soon!",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Save your product, don’t let them wasted!",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            const SizedBox(height: 10),
+            ...productSoonList.asMap().entries.map((entry) {
+              final index = entry.key;
+              final product = entry.value;
 
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: roomList.length + 1,
-              itemBuilder: (context, index) {
-                if (index < roomList.length) {
-                  final room = roomList[index];
+              if (index >= 3) return const SizedBox.shrink();
 
-                  return GestureDetector(
+              final name = product['ProductName'] as String;
+              final teamName = product['TeamName'] as String;
+              final rawDate = product['FormattedExpiredDate'] as String;
+              final teamId = product['TeamTeamID'];
+              final category = product['CategoryName'] as String;
+              final categoryId = product['ProductCategoryId'];
+
+              return Column(
+                children: [
+                  GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => ViewRoom(
-                                teamId: room['TeamID'],
-                                teamName: room['TeamName'],
-                                teamProfileIndex: room['TeamProfileIndex'],
-                                teamDescription: room['TeamDescription'],
-                                teamCode: room['RoomCode'],
+                              (context) => ViewProductCategory(
+                                category: category,
+                                teamId: teamId,
+                                categoryId: categoryId,
                               ),
                         ),
                       );
-                      onReload();
                     },
                     child: Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.orangeAccent),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.asset(
-                              'assets/profileRoom/profile_${room['TeamProfileIndex'] ?? 1}.jpeg',
-                              width: 72,
-                              height: 72,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 80,
-                            child: Text(
-                              room['TeamName'] ?? 'Room',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              const SizedBox(height: 4),
+                              Text("from $teamName's team"),
+                            ],
+                          ),
+                          Text(
+                            rawDate,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
                     ),
-                  );
-                } else {
-                  return GestureDetector(
-                    onTap: () async {
-                      await showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-                        builder: (BuildContext context) {
-                          return const CreateJoinRoomModal();
-                        },
-                      );
-                      onReload();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: const Icon(Icons.add, size: 30),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            "add new",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Divider(),
-          const Text(
-            "Expired Soon!",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "Save your product, don’t let them wasted!",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 10),
-          ...productSoonList.asMap().entries.map((entry) {
-            final index = entry.key;
-            final product = entry.value;
-
-            if (index >= 3) return const SizedBox.shrink();
-
-            final name = product['ProductName'] as String;
-            final teamName = product['TeamName'] as String;
-            final rawDate = product['FormattedExpiredDate'] as String;
-            final teamId = product['TeamTeamID'];
-            final category = product['CategoryName'] as String;
-            final categoryId = product['ProductCategoryId'];
-
-            return Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ViewProductCategory(
-                              category: category,
-                              teamId: teamId,
-                              categoryId: categoryId,
-                            ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.orangeAccent),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text("from $teamName's team"),
-                          ],
-                        ),
-                        Text(
-                          rawDate,
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-              ],
-            );
-          }),
-          const SizedBox(height: 10),
-          const Divider(),
-          const Text(
-            "Recently Added Product",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "Check the product that recently added by you or your team member",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 10),
-          ...recentlyAdded.map((product) {
-            print("isi produk : $product");
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: orange),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Badge "New" yang sudah di-center vertikal
-                  SizedBox(
-                    height: 48, // pastikan tingginya seragam dengan konten lain
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: orange),
-                        ),
-                        child: const Text(
-                          "New",
-                          style: TextStyle(color: Colors.orange, fontSize: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // Center content: Product name and description
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product['ProductName'] ?? 'Unknown Product',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "added by ${product['UserName']} from ${product['TeamName']} team",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // "View Detail" button
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      backgroundColor: Colors.transparent,
-                      side: BorderSide(color: orange),
-                      minimumSize: const Size(0, 24),
-                    ),
-                    onPressed: () {
-                      // final homeState =
-                      //     context.findAncestorStateOfType<_HomePage2State>();
-                      // if (homeState != null) {
-                      final roomId = product['TeamID'];
-                      //   // int selectedRoomIndex = 10;
-
-                      //   // if (roomId != null && roomId != -1) {
-                      //   //   selectedRoomIndex = homeState.roomList.indexWhere(
-                      //   //     (room) => room['TeamID'] == roomId,
-                      //   //   );
-                      //   //   selectedRoomIndex =
-                      //   //       selectedRoomIndex == -1 ? 0 : selectedRoomIndex;
-                      //   // }
-
-                      //   // print(
-                      //   //   "Selected Room Index ke product: $selectedRoomIndex",
-                      //   // );
-                      //   print("Room ID ke product: $roomId");
-                      //   // Update pages with new ProductPage instance
-                      //   final newPages = [
-                      //     // ...existing DashboardPage...
-                      //     ProductPage(roomId: roomId),
-                      //     // ...existing other pages...
-                      //   ];
-
-                      //   homeState.setState(() {
-                      //     homeState.currentIndex = 1;
-                      //   });
-                      // }
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => HomePage2(
-                                initialIndex:
-                                    1, // Set initial index ke ProductPage
-                                initialRoomId: roomId, // Pass roomId
-                              ),
-                        ),
-                        (Route<dynamic> route) => false,
-                      );
-                    },
-                    child: Text(
-                      "View Detail",
-                      style: TextStyle(
-                        color: const Color.fromRGBO(255, 140, 66, 1),
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 12),
                 ],
-              ),
-            );
-          }), //.toList(),
+              );
+            }),
+            const SizedBox(height: 10),
+            const Divider(),
+            const Text(
+              "Recently Added Product",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Check the product that recently added by you or your team member",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            const SizedBox(height: 10),
+            ...recentlyAdded.map((product) {
+              print("isi produk : $product");
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: orange),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Badge "New" yang sudah di-center vertikal
+                    SizedBox(
+                      height: 48, // pastikan tingginya seragam dengan konten lain
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: orange),
+                          ),
+                          child: const Text(
+                            "New",
+                            style: TextStyle(color: Colors.orange, fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ),
 
-          const SizedBox(height: 50),
-        ],
+                    const SizedBox(width: 12),
+
+                    // Center content: Product name and description
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product['ProductName'] ?? 'Unknown Product',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "added by ${product['UserName']} from ${product['TeamName']} team",
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    // "View Detail" button
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(color: orange),
+                        minimumSize: const Size(0, 24),
+                      ),
+                      onPressed: () {
+                        // final homeState =
+                        //     context.findAncestorStateOfType<_HomePage2State>();
+                        // if (homeState != null) {
+                        final roomId = product['TeamID'];
+                        //   // int selectedRoomIndex = 10;
+
+                        //   // if (roomId != null && roomId != -1) {
+                        //   //   selectedRoomIndex = homeState.roomList.indexWhere(
+                        //   //     (room) => room['TeamID'] == roomId,
+                        //   //   );
+                        //   //   selectedRoomIndex =
+                        //   //       selectedRoomIndex == -1 ? 0 : selectedRoomIndex;
+                        //   // }
+
+                        //   // print(
+                        //   //   "Selected Room Index ke product: $selectedRoomIndex",
+                        //   // );
+                        //   print("Room ID ke product: $roomId");
+                        //   // Update pages with new ProductPage instance
+                        //   final newPages = [
+                        //     // ...existing DashboardPage...
+                        //     ProductPage(roomId: roomId),
+                        //     // ...existing other pages...
+                        //   ];
+
+                        //   homeState.setState(() {
+                        //     homeState.currentIndex = 1;
+                        //   });
+                        // }
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => HomePage2(
+                                  initialIndex:
+                                      1, // Set initial index ke ProductPage
+                                  initialRoomId: roomId, // Pass roomId
+                                ),
+                          ),
+                          (Route<dynamic> route) => false,
+                        );
+                      },
+                      child: Text(
+                        "View Detail",
+                        style: TextStyle(
+                          color: const Color.fromRGBO(255, 140, 66, 1),
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }), //.toList(),
+
+            const SizedBox(height: 50),
+          ],
+        ),
       ),
     );
   }

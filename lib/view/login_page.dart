@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       errorMessage = null;
     });
 
-    final url = Uri.parse('http://10.0.2.2:3000/login'); // Emulator
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/login'); // Emulator
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -86,6 +86,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -197,10 +198,21 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         Navigator.pushNamed(context, "/register");
                       },
-                      child: const Text(
-                        "Don't have an account? Register here.",
-                        style: TextStyle(color: Colors.orange),
-                      ),
+                      child: const Text.rich(
+                    TextSpan(
+                      text: "Don't have an account? ",
+                      style: TextStyle(color: Colors.black54),
+                      children: [
+                        TextSpan(
+                          text: "Register here.",
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                     ),
                   ],
                 ),
@@ -212,4 +224,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-}
+} 

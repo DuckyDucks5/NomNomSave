@@ -36,14 +36,16 @@ exports.calendarProduct = (req, res) => {
           todayList.push({
             name: product.ProductName,
             room: product.RoomName,
-            date: formattedDate
+            date: formattedDate,
+            productStatus: product.ProductStatus,
           })
         }
         else{
           upcomingList.push({
             name: product.ProductName,
             room: product.RoomName,
-            date: formattedDate
+            date: formattedDate,
+            productStatus: product.ProductStatus,
           })
         }
       });
@@ -53,7 +55,7 @@ exports.calendarProduct = (req, res) => {
         upcoming: upcomingList
       })
     })
-  }
+}
 
  exports.dotCalendar = (req, res) => {
   const userId = req.query.userId;

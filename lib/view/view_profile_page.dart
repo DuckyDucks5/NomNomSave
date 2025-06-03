@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +25,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (userId == null || token == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-profile/$userId');
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/view-profile/$userId',
+    );
     final response = await http.get(
       url,
       headers: {
@@ -47,6 +51,42 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> fetchLogOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('UserID');
+    final token = prefs.getString('token');
+
+    if (userId == null || token == null) return;
+
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/logout',
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'userId': userId}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Logout successful: ${response.body}");
+      await prefs.remove('UserID');
+      await prefs.remove('token');
+      await prefs.setBool('isLoggedIn', false);
+      await prefs.clear();
+
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } else {
+      print("Logout failed: ${response.body}");
+      throw Exception('Failed to logout');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/home');
-        return false; // cegah pop default
+        return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -66,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/home');
             },
           ),
 
@@ -78,11 +118,13 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: const Icon(Icons.logout, color: Colors.black, size: 30),
               tooltip: 'Logout',
               onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('UserID');
-                await prefs.remove('token');
-                await prefs.setBool('isLoggedIn', false);
-                Navigator.pushReplacementNamed(context, '/');
+                try {
+                  await fetchLogOut();
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Logout failed: $e")));
+                }
               },
             ),
           ],

@@ -136,7 +136,7 @@ exports.register = (req, res) => {
         return res.status(500).json({ message: "Registration failed." });
       }
 
-      const verifyLink = `http://localhost:3000/verify-email?email=${encodeURIComponent(
+      const verifyLink = `https://nomnomsave-be-se-production.up.railway.app/verify-email?email=${encodeURIComponent(
         email
       )}`;
 

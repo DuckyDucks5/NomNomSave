@@ -4,6 +4,7 @@ import 'package:flutter_se/view/view_product_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 import 'join_room_page.dart';
 import 'create_room_page.dart';
@@ -39,7 +40,9 @@ class _ProductPageState extends State<ProductPage> {
 
     if (userId == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/view-room/$userId',
+    );
     final response = await http.get(
       url,
       headers: {
@@ -52,7 +55,7 @@ class _ProductPageState extends State<ProductPage> {
       final List data = jsonDecode(response.body);
       setState(() {
         roomList = data;
-        // Jika roomId belum diset (-1), gunakan TeamID dari room pertama
+        
         if (roomId == -1 && data.isNotEmpty) {
           roomId = data[0]['TeamID'];
         }
@@ -67,7 +70,9 @@ class _ProductPageState extends State<ProductPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    final url = Uri.parse('http://10.0.2.2:3000/count-products/$teamId');
+    final url = Uri.parse(
+      'https://nomnomsave-be-se-production.up.railway.app/count-products/$teamId',
+    );
     final response = await http.get(
       url,
       headers: {
@@ -77,13 +82,37 @@ class _ProductPageState extends State<ProductPage> {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        categoryCounts = data;
-      });
+      try {
+        final decoded = jsonDecode(response.body);
+        if (decoded != null && decoded is List) {
+          setState(() {
+            categoryCounts = decoded;
+          });
+        } else {
+          // Jika data null atau bukan List, atur categoryCounts ke list kosong
+          setState(() {
+            categoryCounts = [];
+          });
+        }
+      } catch (e) {
+        print("Error decoding JSON: $e");
+        setState(() {
+          categoryCounts = [];
+        });
+      }
     } else {
-      throw Exception('Failed to load product counts');
+      print("Failed to load product counts. Status: ${response.statusCode}");
+      setState(() {
+        categoryCounts = [];
+      });
     }
+
+    print("Category Counts: $categoryCounts");
+  }
+
+  Future<bool> _onWillPop() async {
+    Navigator.of(context).pop();
+    return false;
   }
 
   int getCountByCategory(String category) {
@@ -118,11 +147,12 @@ class _ProductPageState extends State<ProductPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ViewProductCategory(
-                category: title,
-                teamId: roomId,
-                categoryId: categoryId,
-              ),
+              builder:
+                  (context) => ViewProductCategory(
+                    category: title,
+                    teamId: roomId,
+                    categoryId: categoryId,
+                  ),
             ),
           ).then((value) {
             if (value == 'refresh') {
@@ -138,202 +168,217 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     const orange = Color(0xFFFF8C42);
-    // print("roomIndexdiProduct : $selectedRoomIndex");
-    return Scaffold(
-      backgroundColor: Colors.white,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: orange,
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => AddProductPage()),
-          );
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: orange,
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AddProductPage()),
+            );
 
-          if (result == 'goToProduct') {
-            await fetchRooms();
-          }
-        },
-        child: const Icon(Icons.addchart_rounded, color: Colors.white),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                const Text(
-                  "My Room",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 105,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: roomList.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index < roomList.length) {
-                        final room = roomList[index];
-                        final isSelected = room['TeamID'] == roomId;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              roomId = room['TeamID'];
-                            });
-                            fetchProductCountForRoom(roomId);
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            child: SizedBox(
-                              width: 80,
-                              child: Column(
-                                children: [
-                                  Container(
-                                    decoration:
-                                        isSelected
-                                            ? BoxDecoration(
-                                              border: Border.all(
-                                                color: Colors.black,
-                                                width: 2,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(1),
-                                                  blurRadius: 6,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            )
-                                            : null,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Image.asset(
-                                        'assets/profileRoom/profile_${room['TeamProfileIndex'] ?? 1}.jpeg',
-                                        width: 72,
-                                        height: 72,
-                                        fit: BoxFit.cover,
+            if (result == 'goToProduct') {
+              await fetchRooms();
+            }
+          },
+          child: const Icon(Icons.addchart_rounded, color: Colors.white),
+        ),
+        body: SafeArea(
+          child: RefreshIndicator(
+            color: orange,
+            onRefresh: () async {
+              await fetchRooms();
+              if (roomId != -1) {
+                await fetchProductCountForRoom(roomId);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text(
+                      "My Room",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 105,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: roomList.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index < roomList.length) {
+                            final room = roomList[index];
+                            final isSelected = room['TeamID'] == roomId;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  roomId = room['TeamID'];
+                                });
+                                fetchProductCountForRoom(roomId);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                child: SizedBox(
+                                  width: 80,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        decoration:
+                                            isSelected
+                                                ? BoxDecoration(
+                                                  border: Border.all(
+                                                    color: Colors.black,
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(1),
+                                                      blurRadius: 6,
+                                                      offset: const Offset(0, 2),
+                                                    ),
+                                                  ],
+                                                )
+                                                : null,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: Image.asset(
+                                            'assets/profileRoom/profile_${room['TeamProfileIndex'] ?? 1}.jpeg',
+                                            width: 72,
+                                            height: 72,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        room['TeamName'] ?? 'Room',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color:
+                                              isSelected
+                                                  ? Colors.black
+                                                  : Colors.grey,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      if (isSelected)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 2),
+                                          height: 2,
+                                          color: Colors.grey.shade500,
+                                          width: 40,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            return GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(24),
+                                    ),
+                                  ),
+                                  builder: (BuildContext context) {
+                                    return const CreateJoinRoomModal();
+                                  },
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: Colors.black),
+                                      ),
+                                      child: const Icon(Icons.add, size: 30),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      "add new",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    room['TeamName'] ?? 'Room',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.black : Colors.grey,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (isSelected)
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 2),
-                                      height: 2,
-                                      color: Colors.grey.shade500,
-                                      width: 40,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      } else {
-                        return GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(24),
+                                  ],
                                 ),
                               ),
-                              builder: (BuildContext context) {
-                                return const CreateJoinRoomModal();
-                              },
                             );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 72,
-                                  height: 72,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.black),
-                                  ),
-                                  child: const Icon(Icons.add, size: 30),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  "add new",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Categories",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                  children: [
-                    buildCategoryCard(
-                      "assets/category/bread.png",
-                      "Bakery & Bread",
+                          }
+                        },
+                      ),
                     ),
-                    buildCategoryCard(
-                      "assets/category/drinks.png",
-                      "Beverages",
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Categories",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    buildCategoryCard(
-                      "assets/category/canned.png",
-                      "Canned & Preserved Food",
+                    const SizedBox(height: 12),
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.2,
+                      children: [
+                        buildCategoryCard(
+                          "assets/category/bread.png",
+                          "Bakery & Bread",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/drinks.png",
+                          "Beverages",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/canned.png",
+                          "Canned & Preserved Food",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/dairy.png",
+                          "Dairy & Eggs",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/frozen.png",
+                          "Frozen Food",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/snack.png",
+                          "Snack & Sweets",
+                        ),
+                        buildCategoryCard(
+                          "assets/category/spices.png",
+                          "Spice & Condiments",
+                        ),
+                        buildCategoryCard("assets/category/other.png", "Other"),
+                      ],
                     ),
-                    buildCategoryCard(
-                      "assets/category/dairy.png",
-                      "Dairy & Eggs",
-                    ),
-                    buildCategoryCard(
-                      "assets/category/frozen.png",
-                      "Frozen Food",
-                    ),
-                    buildCategoryCard(
-                      "assets/category/snack.png",
-                      "Snack & Sweets",
-                    ),
-                    buildCategoryCard(
-                      "assets/category/spices.png",
-                      "Spice & Condiments",
-                    ),
-                    buildCategoryCard("assets/category/other.png", "Other"),
+                    const SizedBox(height: 80),
                   ],
                 ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         ),

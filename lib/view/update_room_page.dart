@@ -54,7 +54,7 @@ class UpdateRoomPage extends State<UpdatePage> {
   final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-  final url = Uri.parse('http://10.0.2.2:3000/update-room/$teamId'); // Ganti dengan URL backend kamu
+  final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/update-room/$teamId'); // Ganti dengan URL backend kamu
 
   final response = await http.put(
     url,
@@ -135,7 +135,7 @@ class UpdateRoomPage extends State<UpdatePage> {
                   height: 110,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Colors.orange,
+                      color: Colors.black,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(20.0),
@@ -284,7 +284,7 @@ class ProfilePicturePickerPage extends StatelessWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.orange, width: 2),
+                border: Border.all(color: Colors.black, width: 2),
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
                   image: AssetImage(

@@ -12,7 +12,7 @@ class AddProductPage extends StatefulWidget {
 
 class _AddProductPageState extends State<AddProductPage> {
   List<dynamic> roomList = [];
-  Map<String, int> roomMap = {}; // Map teamName to teamId
+  Map<String, int> roomMap = {};
   final List<String> _groupOptions = [];
   final List<String> _categoryOptions = [
     'Bakery & Bread',
@@ -27,7 +27,6 @@ class _AddProductPageState extends State<AddProductPage> {
 
   final TextEditingController _productNameController = TextEditingController();
   DateTime? _selectedDate;
-
   String? _selectedGroup;
   String? _selectedCategory;
 
@@ -44,7 +43,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
     if (userId == null) return;
 
-    final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-room/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -59,7 +58,6 @@ class _AddProductPageState extends State<AddProductPage> {
         roomList = data;
         _groupOptions.clear();
         roomMap.clear();
-
         for (var room in data) {
           String name = room['TeamName'].toString();
           int id = room['TeamID'];
@@ -109,8 +107,7 @@ class _AddProductPageState extends State<AddProductPage> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:3000/add-product');
-
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/add-product');
     final response = await http.post(
       url,
       headers: {
@@ -144,6 +141,19 @@ class _AddProductPageState extends State<AddProductPage> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFFFA726),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            dialogBackgroundColor: Color(0xFFFFF3E0),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -160,7 +170,7 @@ class _AddProductPageState extends State<AddProductPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+          
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
@@ -178,7 +188,6 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
             ),
 
-            // Form
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -191,14 +200,17 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 15),
 
-                    // Group Dropdown
                     const Text("Group Selected", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Color(0xFFFFF3E0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       ),
                       value: _selectedGroup,
                       items: _groupOptions.map((group) {
@@ -215,7 +227,6 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Product Name
                     const Text("Product Name", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -225,18 +236,22 @@ class _AddProductPageState extends State<AddProductPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       ),
                     ),
                     const SizedBox(height: 20),
 
-                    // Product Category
                     const Text("Product Category", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Color(0xFFFFF3E0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       ),
                       value: _selectedCategory,
                       items: _categoryOptions.map((cat) {
@@ -253,7 +268,6 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Expired Date Picker
                     const Text("Expired Date", style: TextStyle(fontSize: 15)),
                     const SizedBox(height: 8),
                     GestureDetector(
@@ -267,7 +281,7 @@ class _AddProductPageState extends State<AddProductPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 5,
+                            vertical: 14,
                             horizontal: 12,
                           ),
                         ),
@@ -275,8 +289,8 @@ class _AddProductPageState extends State<AddProductPage> {
                           _selectedDate == null
                               ? 'dd / mm / yyyy'
                               : '${_selectedDate!.day.toString().padLeft(2, '0')} / '
-                                '${_selectedDate!.month.toString().padLeft(2, '0')} / '
-                                '${_selectedDate!.year}',
+                                  '${_selectedDate!.month.toString().padLeft(2, '0')} / '
+                                  '${_selectedDate!.year}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
@@ -284,26 +298,22 @@ class _AddProductPageState extends State<AddProductPage> {
                     const SizedBox(height: 90),
 
                     // Add Product Button
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: _addProduct,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFA726),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
+                    ElevatedButton(
+                      onPressed: _addProduct,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFA726),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          'Add Product',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      child: const Text(
+                        'Add Product',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

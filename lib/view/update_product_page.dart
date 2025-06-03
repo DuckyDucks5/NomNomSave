@@ -66,7 +66,7 @@ class _UpdateProductPageState extends State<UpdateProductPage> {
     }
 
     final url = Uri.parse(
-      'http://10.0.2.2:3000/update-product/${widget.productId}',
+      'https://nomnomsave-be-se-production.up.railway.app/update-product/${widget.productId}',
     );
 
     final response = await http.put(

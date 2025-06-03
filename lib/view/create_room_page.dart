@@ -44,7 +44,7 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
       token = prefs.getString('token');
     });
 
-    final url = Uri.parse('http://10.0.2.2:3000/create-room'); // Emulator
+    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/create-room'); // Emulator
 
     setState(() => isLoading = true);
 
@@ -244,7 +244,7 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
             const Text('Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(
-              'You can only create up to 7 rooms in your account\nCurrently (0/7) rooms',
+              'You can only create up to 7 rooms in your account',
               style: TextStyle(color: Colors.grey[700]),
             ),
             const SizedBox(height: 40),
@@ -318,7 +318,7 @@ class ProfilePicturePickerPage extends StatelessWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.orange, width: 2),
+                border: Border.all(color: Colors.black, width: 2),
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
                   image: AssetImage('assets/profileRoom/profile_$imageIndex.jpeg'),
