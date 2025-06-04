@@ -14,7 +14,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  int? selectedImageIndex = 1; // Default to 1
+  int? selectedImageIndex = 6; // Default to 1
 
   @override
   void initState() {
@@ -28,21 +28,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     final token = prefs.getString('token');
 
     if (userId == null) return;
-
-    if(nameController.text.length < 3 || nameController.text.length > 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Full name must be between 3 and 10 characters!")),
-      );
-      return;
-    }
-
-
-    if(phoneController.text.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Phone number must be at least 10 digits!")),
-      );
-      return;
-    }
 
     final url = Uri.parse(
       'https://nomnomsave-be-se-production.up.railway.app/view-profile/$userId',
@@ -68,7 +53,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         selectedImageIndex =
             (data['UserProfileIndex'] != null && data['UserProfileIndex'] != 0)
                 ? data['UserProfileIndex']
-                : 1;
+                : 6;
       });
     } else {
       throw Exception('Failed to load user profile');
@@ -76,9 +61,43 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   }
 
   Future<void> updateUserProfile() async {
+    final name = nameController.text.trim();
+    final phone = phoneController.text.trim();
+    final email = emailController.text.trim();
+
+    if (name.isEmpty || phone.isEmpty || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("All fields must be filled!")),
+      );
+      return;
+    }
+
+    if (name.length < 3 || name.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Full name must be between 3 and 10 characters!")),
+      );
+      return;
+    }
+
+    if (phone.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Phone number must be at least 10 digits!")),
+      );
+      return;
+    }
+
+    if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email address!")),
+      );
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
+
+
 
     if (userId == null) return;
 
@@ -92,9 +111,9 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'UserName': nameController.text,
-        'UserEmail': emailController.text,
-        'UserPhoneNumber': phoneController.text,
+        'UserName': name,
+        'UserEmail': email,
+        'UserPhoneNumber': phone,
         'ProfileImageIndex': selectedImageIndex ?? 1,
       }),
     );

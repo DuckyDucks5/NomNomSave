@@ -69,125 +69,128 @@ class _HistoryPageState extends State<HistoryPage> {
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
-            padding:
-                const EdgeInsets.only(top: 30, right: 16, left: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 30, right: 16, left: 16, bottom: 16),
             child: isLoading
                 ? const Center(child: CircularProgressIndicator(color: Colors.orange))
-                : productList.isEmpty
-                    ? const Center(child: Text('No products found.'))
-                    : RefreshIndicator(
-                        color: Colors.orange,
-                        onRefresh: refreshHistory,
-                        child: ListView.builder(
-                          itemCount: productList.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return const Padding(
-                                padding: EdgeInsets.only(top: 8, bottom: 16),
-                                child: Row(
-                                  children: [
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Product History',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                : RefreshIndicator(
+                    color: Colors.orange,
+                    onRefresh: refreshHistory,
+                    child: productList.isEmpty
+                        ? ListView(
+                            children: const [
+                              Center(child: Text('No products found.')),
+                            ],
+                          )
+                        : ListView.builder(
+                            itemCount: productList.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 8, bottom: 16),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Product History',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              final product = productList[index - 1];
+                              final productStatus = product['ProductStatus'];
+                              final formattedDate = product['ExpiredDate'];
+                              final roomName = product['TeamName'] ?? 'Unknown Room';
+
+                              Color statusColor;
+                              String statusLabel;
+
+                              if (productStatus == 2) {
+                                statusColor = Colors.red;
+                                statusLabel = 'Expired';
+                              } else if (productStatus == 3) {
+                                statusColor = Colors.green;
+                                statusLabel = 'Consumed';
+                              } else {
+                                statusColor = Colors.grey;
+                                statusLabel = 'Unknown';
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: statusColor,
+                                      width: 5,
+                                    ),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            statusLabel,
+                                            style: TextStyle(
+                                              color: statusColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Text(
+                                            roomName,
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            product['ProductName'],
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            formattedDate,
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
-                            }
-
-                            final product = productList[index - 1];
-                            final productStatus = product['ProductStatus'];
-                            final formattedDate = product['ExpiredDate'];
-                            final roomName = product['TeamName'] ?? 'Unknown Room';
-
-                            Color statusColor;
-                            String statusLabel;
-
-                            if (productStatus == 2) {
-                              statusColor = Colors.red;
-                              statusLabel = 'Expired';
-                            } else if (productStatus == 3) {
-                              statusColor = Colors.green;
-                              statusLabel = 'Consumed';
-                            } else {
-                              statusColor = Colors.grey;
-                              statusLabel = 'Unknown';
-                            }
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  left: BorderSide(
-                                    color: statusColor,
-                                    width: 5,
-                                  ),
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          statusLabel,
-                                          style: TextStyle(
-                                            color: statusColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          roomName,
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          product['ProductName'],
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          formattedDate,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                            },
+                          ),
+                  ),
           ),
         ),
       ),

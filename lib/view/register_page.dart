@@ -120,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
               _buildTextField(
                 controller: _fullNameController,
                 icon: Icons.person,
-                label: "Full Name",
+                label: "User Name",
               ),
               const SizedBox(height: 15),
               _buildTextField(

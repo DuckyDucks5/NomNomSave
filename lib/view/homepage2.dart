@@ -625,8 +625,8 @@ class DashboardPage extends StatelessWidget {
                             builder:
                                 (context) => HomePage2(
                                   initialIndex:
-                                      1, // Set initial index ke ProductPage
-                                  initialRoomId: roomId, // Pass roomId
+                                      1, 
+                                  initialRoomId: roomId, 
                                 ),
                           ),
                           (Route<dynamic> route) => false,

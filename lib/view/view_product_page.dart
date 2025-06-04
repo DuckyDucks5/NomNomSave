@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_se/view/homepage2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +27,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
   List<dynamic> productList = [];
   List<dynamic> filteredProductList = []; // Add this line
   final TextEditingController _searchController =
-      TextEditingController(); // Add this line
+      TextEditingController(); 
   String _sortOption = 'Closest';
   final List<String> sortOptions = ['Closest', 'Farthest'];
 
@@ -95,7 +96,9 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/delete-product/$productId');
+      final url = Uri.parse(
+        'https://nomnomsave-be-se-production.up.railway.app/delete-product/$productId',
+      );
       final response = await http.delete(
         url,
         headers: {
@@ -118,10 +121,10 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
         );
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Room deleted successfully')),
+          const SnackBar(content: Text('product deleted successfully')),
         );
       } else {
-        throw Exception('Failed to delete room');
+        throw Exception('Failed to delete product');
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -136,7 +139,9 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/mark-consumed/$productId');
+      final url = Uri.parse(
+        'https://nomnomsave-be-se-production.up.railway.app/mark-consumed/$productId',
+      );
       final response = await http.put(
         url,
         headers: {
@@ -365,7 +370,17 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, 'refresh');
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => HomePage2(
+                      initialIndex: 1, // misal tab Product
+                      initialRoomId: widget.teamId, // passing roomId
+                    ),
+              ),
+              (Route<dynamic> route) => false, // hapus semua route sebelumnya
+            );
           },
         ),
       ),
@@ -416,7 +431,10 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
                               Container(
                                 width: 3,
                                 height: 24,
-                                color: _sortOption == option ? Colors.black : Colors.transparent,
+                                color:
+                                    _sortOption == option
+                                        ? Colors.black
+                                        : Colors.transparent,
                                 margin: const EdgeInsets.only(right: 8),
                               ),
                               Text(option),
@@ -428,9 +446,18 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Text('Sort By', style: TextStyle(color: Color.fromARGB(255, 93, 93, 93))),
+                        Text(
+                          'Sort By',
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 93, 93, 93),
+                          ),
+                        ),
                         SizedBox(width: 4),
-                        Icon(Icons.filter_list, color: Color.fromARGB(255, 93, 93, 93), size: 18),
+                        Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 93, 93, 93),
+                          size: 18,
+                        ),
                       ],
                     ),
                   ),
@@ -467,7 +494,9 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
                           }
 
                           String dayText =
-                              (daysLeft == 0) ? 'Today' : '$daysLeft Days Left';
+                              (daysLeft == 0)
+                                  ? 'Today'
+                                  : '$daysLeft day(s) left';
 
                           return GestureDetector(
                             onTap: () => _showInfo(context, product),
