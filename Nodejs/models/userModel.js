@@ -52,7 +52,7 @@ const userModel = {
   ) => {
     const sql = `
     UPDATE msuser 
-    SET UserName = ?, UserEmail = ?, UserPhoneNumber = ?, UserImageIndex = ? 
+    SET UserName = ?, UserEmail = ?, UserPhoneNumber = ?, UserProfileIndex = ? 
     WHERE UserID = ?
   `;
     db.query(
@@ -89,24 +89,6 @@ const userModel = {
     const sql =
       "SELECT * FROM msuser WHERE ResetToken =? AND ResetTokenExpiry > ?";
     db.query(sql, [token, Date.now()], callback);
-  },
-
-  updateProfile: (
-    userId,
-    username,
-    email,
-    phonenumber,
-    profileImageIndex,
-    callback
-  ) => {
-    const sql = `
-    UPDATE msuser SET UserName = ?, UserEmail = ?, UserPhoneNumber = ?, UserProfileIndex = ? WHERE UserID = ?
-    `;
-    db.query(
-      sql,
-      [username, email, phonenumber, profileImageIndex, userId],
-      callback
-    );
   },
 
   updateFCMToken: (userId, fcmToken, callback) => {

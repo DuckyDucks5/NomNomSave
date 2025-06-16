@@ -56,7 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/register',
+      'http://10.0.2.2:3000/register',
     ); // Gunakan 'localhost' jika di browser
     final response = await http.post(
       url,

@@ -64,7 +64,7 @@ class NotificationService {
 
         final response = await http.post(
           Uri.parse(
-            'https://nomnomsave-be-se-production.up.railway.app/save-fcm-token',
+            'http://10.0.2.2:3000/save-fcm-token',
           ),
           headers: {
             'Content-Type': 'application/json',

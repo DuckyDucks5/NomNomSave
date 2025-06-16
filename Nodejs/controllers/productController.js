@@ -1,6 +1,7 @@
 const productModel = require("../models/productModel");
 const roomModel = require("../models/roomModel");
 const moment = require("moment");
+const isUserInRoom = require('../utils/roomUtils');
 
 exports.addProduct = (req, res) => {
   const { userId, teamId, ProductName, ExpiredDate, ProductCategory } =
@@ -256,4 +257,3 @@ exports.markExpired = (req, res) => {
     res.status(200).json({ message: "Expired products marked successfully." });
   });
 };
-

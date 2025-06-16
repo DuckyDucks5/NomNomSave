@@ -25,7 +25,7 @@ class _CalendarPageState extends State<CalendarPage> {
   final Map<DateTime, List<Widget>> _todayEvents = {};
   final Set<DateTime> _loadedDates = {};
 
-  final String baseUrl = "https://nomnomsave-be-se-production.up.railway.app";
+  final String baseUrl = "http://10.0.2.2:3000";
 
   @override
   void initState() {

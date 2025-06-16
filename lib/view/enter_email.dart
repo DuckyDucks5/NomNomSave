@@ -14,7 +14,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
   TextEditingController emailController = TextEditingController();
 
   Future<void> _sendVerificationCode(String email) async {
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/forgot-password');
+    final url = Uri.parse('http://10.0.2.2:3000/forgot-password');
 
     try {
       final response = await http.post(

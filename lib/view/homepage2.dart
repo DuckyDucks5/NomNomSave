@@ -49,7 +49,7 @@ class _HomePage2State extends State<HomePage2> {
       return;
     }
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-room/$userId');
+    final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
 
     final response = await http.get(
       url,
@@ -78,7 +78,7 @@ class _HomePage2State extends State<HomePage2> {
 
     if (userId == null || token == null) return;
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-profile/$userId');
+    final url = Uri.parse('http://10.0.2.2:3000/view-profile/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -106,7 +106,7 @@ class _HomePage2State extends State<HomePage2> {
     final userId = prefs.getInt('UserID');
     final token = prefs.getString('token');
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/overview-product-home/$userId');
+    final url = Uri.parse('http://10.0.2.2:3000/overview-product-home/$userId');
     final response = await http.get(
       url,
       headers: {
@@ -134,7 +134,7 @@ class _HomePage2State extends State<HomePage2> {
     final token = prefs.getString('token');
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/recently-added-product/$userId',
+      'http://10.0.2.2:3000/recently-added-product/$userId',
     );
     final response = await http.get(
       url,
@@ -161,7 +161,7 @@ class _HomePage2State extends State<HomePage2> {
     final token = prefs.getString('token');
 
     final response = await http.put(
-      Uri.parse('https://nomnomsave-be-se-production.up.railway.app/mark-expired'),
+      Uri.parse('http://10.0.2.2:3000/mark-expired'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const product = require("../models/productModel");
 const pushNotif = require("../jobs/pushNotif");
 const productModel = require("../models/productModel");
@@ -10,9 +10,12 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 // ...existing code...
 
-cron.schedule('0 0 * * *', async () => {
-    const today = moment().format('YYYY-MM-DD');
+cron.schedule('0 17 * * *', async () => {
+    const today = moment().tz('Asia/Jakarta').format('YYYY-MM-DD');
     console.log(`[CRON] Running status update at ${today}`);
+
+    console.log("Server time:", new Date().toString());
+    console.log("Jakarta time:", moment().tz('Asia/Jakarta').format());
 
     product.updateExpiredStatus(today, (err, result) => {
         if (err) {
@@ -24,14 +27,17 @@ cron.schedule('0 0 * * *', async () => {
 });
 
 
-cron.schedule('* * * * *', async () => {
-  const today = moment().format('YYYY-MM-DD');
+cron.schedule('*/2 * * * *', async () => {
+  const today = moment().tz('Asia/Jakarta').format('YYYY-MM-DD');
   console.log(`[CRON] Running notification send at ${today}`);
 
+  console.log("Server time:", new Date().toString());
+  console.log("Jakarta time:", moment().tz('Asia/Jakarta').format());
+
   const upcomingDates = [
-    moment().add(7, 'days').format('YYYY-MM-DD'),
-    moment().add(3, 'days').format('YYYY-MM-DD'),
-    moment().add(1, 'days').format('YYYY-MM-DD'),
+    moment().tz('Asia/Jakarta').add(7, 'days').format('YYYY-MM-DD'),
+    moment().tz('Asia/Jakarta').add(3, 'days').format('YYYY-MM-DD'),
+    moment().tz('Asia/Jakarta').add(1, 'days').format('YYYY-MM-DD'),
     today
   ];
 
@@ -39,29 +45,34 @@ cron.schedule('* * * * *', async () => {
     if (err) return console.error("[CRON ERROR] Failed to fetch users:", err);
 
     if(users.length === 0){
-        console.log("[CRON] No logged-in users to notify.");
+        console.log(`[CRON] No User to notify`);
         return;
     }
     for (const user of users) {
       const userId = user.UserID;
+      console.log(`UserID: ${userId}`);
 
       for (const date of upcomingDates) {
         try {
+          console.log(`Dates: ${date}`)
           const products = await productModel.searchProductByExpiredDate(userId, date);
 
           if(products.length === 0){
-            console.log("[CRON] No product to notify.");
-            return;
+            console.log(`[CRON] No product to notify for ${date}` );
+            continue;
           }
           
           for (const p of products) {
-            const daysLeft = moment(p.ExpiredDate).diff(moment().startOf('day'), 'days');
+            const nowJakarta = moment().tz('Asia/Jakarta').startOf('day');
+            const expiredJakarta = moment(p.ExpiredDate).tz('Asia/Jakarta').startOf('day');
+            const daysLeft = expiredJakarta.diff(nowJakarta, 'days');
+
             const msg = (daysLeft === 0)
-              ? `Your ${p.ProductName} has expired! ❌`
+              ? `Your ${p.ProductName} will expire today! 😱💔😰`
               : `Your ${p.ProductName} in ${p.TeamName} room will expire in ${daysLeft} days! ⏳`;
 
-            if (p.fcmToken) {
-              await pushNotif.sendToUser(p.fcmToken, msg);
+            if (user.fcmToken) {
+              await pushNotif.sendToUser(user.fcmToken, msg);
               await new Promise(res => setTimeout(res, 300));
             }
           }

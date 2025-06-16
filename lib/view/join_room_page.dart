@@ -46,7 +46,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/get-room-name/$enteredCode');
+      final url = Uri.parse('http://10.0.2.2:3000/get-room-name/$enteredCode');
       
       final response = await http.get(
       url,
@@ -104,7 +104,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
     });
 
     try {
-      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/join-room');
+      final url = Uri.parse('http://10.0.2.2:3000/join-room');
 
       final response = await http.post(
         url,

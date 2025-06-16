@@ -54,7 +54,7 @@ class UpdateRoomPage extends State<UpdatePage> {
   final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-  final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/update-room/$teamId'); // Ganti dengan URL backend kamu
+  final url = Uri.parse('http://10.0.2.2:3000/update-room/$teamId'); // Ganti dengan URL backend kamu
 
   final response = await http.put(
     url,

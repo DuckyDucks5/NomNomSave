@@ -86,7 +86,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/get-member-room/${widget.teamId}',
+        'http://10.0.2.2:3000/get-member-room/${widget.teamId}',
       );
       final response = await http.get(
         url,
@@ -127,7 +127,7 @@ class _RoomPageState extends State<RoomPage> {
     final token = prefs.getString('token');
 
     try {
-      final url = Uri.parse(('https://nomnomsave-be-se-production.up.railway.app/get-member-room/$roomId'));
+      final url = Uri.parse(('http://10.0.2.2:3000/get-member-room/$roomId'));
       final response = await http.get(
         url,
         headers: {
@@ -159,7 +159,7 @@ class _RoomPageState extends State<RoomPage> {
   Future<void> _loadProductOverview(int teamId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/overview-product-room/$teamId');
+    final url = Uri.parse('http://10.0.2.2:3000/overview-product-room/$teamId');
     final response = await http.get(
       url,
       headers: {
@@ -184,7 +184,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/delete-room/${widget.teamId}',
+        'http://10.0.2.2:3000/delete-room/${widget.teamId}',
       );
       final response = await http.delete(
         url,
@@ -219,7 +219,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/leave-room/${widget.teamId}/$currentUserId',
+        'http://10.0.2.2:3000/leave-room/${widget.teamId}/$currentUserId',
       );
       final response = await http.delete(
         url,
@@ -254,7 +254,7 @@ class _RoomPageState extends State<RoomPage> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/delete-member/${widget.teamId}/$userId',
+        'http://10.0.2.2:3000/delete-member/${widget.teamId}/$userId',
       );
       final response = await http.delete(
         url,

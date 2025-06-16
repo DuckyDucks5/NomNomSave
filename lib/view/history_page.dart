@@ -33,7 +33,7 @@ class _HistoryPageState extends State<HistoryPage> {
     if (userId == null || token == null) return;
 
     final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/history-product/$userId');
+        'http://10.0.2.2:3000/history-product/$userId');
     final response = await http.get(
       url,
       headers: {

@@ -41,7 +41,7 @@ class _ProductPageState extends State<ProductPage> {
     if (userId == null) return;
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/view-room/$userId',
+      'http://10.0.2.2:3000/view-room/$userId',
     );
     final response = await http.get(
       url,
@@ -71,7 +71,7 @@ class _ProductPageState extends State<ProductPage> {
     final token = prefs.getString('token');
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/count-products/$teamId',
+      'http://10.0.2.2:3000/count-products/$teamId',
     );
     final response = await http.get(
       url,

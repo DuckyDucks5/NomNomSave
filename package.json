@@ -25,6 +25,7 @@
     "googleapis": "^148.0.0",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
+    "moment-timezone": "^0.6.0",
     "mysql2": "^3.14.0",
     "node-cron": "^4.0.7",
     "nodemailer": "^7.0.3",

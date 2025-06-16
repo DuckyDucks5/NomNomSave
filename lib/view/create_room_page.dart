@@ -44,7 +44,7 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
       token = prefs.getString('token');
     });
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/create-room'); // Emulator
+    final url = Uri.parse('http://10.0.2.2:3000/create-room'); // Emulator
 
     setState(() => isLoading = true);
 

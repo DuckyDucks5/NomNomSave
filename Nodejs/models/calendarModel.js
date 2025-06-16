@@ -14,7 +14,7 @@ const calendarModel = {
         ORDER BY p.ExpiredDate;
         `;
         db.query(sql, [userId, date], callback);
-    },
+    },
 
     dotCalendar: (userId, month, year, callback) => {
         const sql = `

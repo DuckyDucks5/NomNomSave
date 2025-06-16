@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       errorMessage = null;
     });
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/login'); // Emulator
+    final url = Uri.parse('http://10.0.2.2:3000/login'); // Emulator
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

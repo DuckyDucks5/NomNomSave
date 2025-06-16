@@ -27,7 +27,8 @@ const productModel = {
     const sql = `SELECT mp.ProductID, mp.ProductName, mt.TeamName, mu.UserName, mt.TeamID 
     FROM msteam mt JOIN msproduct mp ON mp.TeamTeamID = mt.TeamID 
     JOIN msuser mu ON mu.UserID = mp.UserUserID
-    WHERE mp.UserUserID = ? ORDER BY mp.ProductID DESC LIMIT 3`;
+    JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID
+    WHERE mc.UserUserID = ? ORDER BY mp.ProductID DESC LIMIT 3`;
     db.query(sql, [userId], callback);
   },
 
@@ -48,12 +49,12 @@ const productModel = {
 
   viewProductCategory: (userId, categoryId, teamId, callback) => {
     const sql = `SELECT mp.ProductID, mp.ProductName, DATE_FORMAT(mp.ExpiredDate, '%d %M %Y') AS FormattedExpiredDate, 
-    DATEDIFF(mp.ExpiredDate, CURDATE()) AS daysLeft, mt.TeamName, mp.ProductStatus, mu.UserName
-        FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
-        JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID
-        JOIN msuser mu ON mu.UserID = mc.UserUserID 
-        WHERE mc.UserUserID =? AND mp.ProductCategoryId = ? AND mp.TeamTeamID =? AND mp.ProductStatus = 1
-        ORDER BY ExpiredDate ASC`;
+      DATEDIFF(mp.ExpiredDate, CURDATE()) AS daysLeft, mt.TeamName, mp.ProductStatus, mu.UserName
+      FROM msteam mt JOIN msproduct mp ON mp.TeamTeamID = mt.TeamID 
+		  JOIN msuser mu ON mu.UserID = mp.UserUserID
+		  JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID
+      WHERE mc.UserUserID = ? AND mp.ProductCategoryId = ? AND mp.TeamTeamID =? AND mp.ProductStatus = 1
+      ORDER BY ExpiredDate ASC`;
     db.query(sql, [userId, categoryId, teamId], callback);
   },
 
@@ -110,10 +111,13 @@ const productModel = {
     return new Promise((resolve, reject) => {
       const sql = `
           SELECT mp.ProductID, mp.ProductName, mp.ExpiredDate, mp.UserUserID, mu.fcmToken, mt.TeamName
-          FROM msproduct mp JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
-          JOIN  msuser mu ON mp.UserUserID = mu.UserID
+          FROM msproduct mp 
+          JOIN msteam mt ON mp.TeamTeamID = mt.TeamID
+          JOIN msuser mu ON mp.UserUserID = mu.UserID
           JOIN mscollaboration mc ON mp.TeamTeamID = mc.TeamTeamID  
-          WHERE mc.UserUserID = ? AND DATE(mp.ExpiredDate) = ?
+          WHERE (mc.UserUserID = ?) 
+          AND DATE(mp.ExpiredDate) = ?
+          AND mp.ProductStatus = 1;
             `;
       db.query(sql, [userId, expireDate], (err, results) => {
         if (err) reject(err);

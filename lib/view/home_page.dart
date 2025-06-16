@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     if (userId == null || token == null) return;
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/logout',
+      'http://10.0.2.2:3000/logout',
     );
 
     final response = await http.post(

@@ -67,7 +67,7 @@ class _SplashDeciderPageState extends State<SplashDeciderPage> with TickerProvid
     }
 
     try {
-      final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/view-room/$userId');
+      final url = Uri.parse('http://10.0.2.2:3000/view-room/$userId');
       final response = await http.get(
         url,
         headers: {

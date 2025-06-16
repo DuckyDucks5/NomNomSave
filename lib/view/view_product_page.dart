@@ -70,7 +70,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
     }
 
     final url = Uri.parse(
-      'https://nomnomsave-be-se-production.up.railway.app/view-product-category/$userId/${widget.categoryId}/${widget.teamId}',
+      'http://10.0.2.2:3000/view-product-category/$userId/${widget.categoryId}/${widget.teamId}',
     );
     final response = await http.get(
       url,
@@ -97,7 +97,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/delete-product/$productId',
+        'http://10.0.2.2:3000/delete-product/$productId',
       );
       final response = await http.delete(
         url,
@@ -140,7 +140,7 @@ class _ViewProductCategoryState extends State<ViewProductCategory> {
 
     try {
       final url = Uri.parse(
-        'https://nomnomsave-be-se-production.up.railway.app/mark-consumed/$productId',
+        'http://10.0.2.2:3000/mark-consumed/$productId',
       );
       final response = await http.put(
         url,

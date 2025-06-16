@@ -33,7 +33,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       return;
     }
 
-    final url = Uri.parse('https://nomnomsave-be-se-production.up.railway.app/reset-password');
+    final url = Uri.parse('http://10.0.2.2:3000/reset-password');
 
     try {
       final response = await http.post(

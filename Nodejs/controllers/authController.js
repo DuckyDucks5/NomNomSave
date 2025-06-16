@@ -199,9 +199,9 @@ exports.forgotPassword = (req, res) => {
       return res.status(400).json({ message: "Email Not Found!" });
     }
 
-    const userId = result[0].UserID;
+    const userEmail = result[0].UserEmail;
 
-    userModel.updateResetToken(userId, token, tokenExpiry, (err2) => {
+    userModel.updateResetToken(userEmail, token, tokenExpiry, (err2) => {
       if (err2) {
         return res.status(500).json({ error: err2.message });
       }
