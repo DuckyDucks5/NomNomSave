@@ -53,8 +53,6 @@ This project was developed as part of a university group assignment, focused on 
 \`\`\`bash
 npm install
 npm start
-
-node app.js
 \`\`\`
 
 4. Set up your `.env` file with your MySQL database credentials.
@@ -86,7 +84,7 @@ flutter run
 
 ## 📂 Project Links
 
-- **Notion (Documentation):** https://www.notion.so/NomNomSave-1e26ada7c30980aca5bcfdd54d5bf8ed
+- **Notion (Documentation):** [Notion](https://www.notion.so/NomNomSave-1e26ada7c30980aca5bcfdd54d5bf8ed)
 
 ---
 
