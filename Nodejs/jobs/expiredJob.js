@@ -27,7 +27,7 @@ cron.schedule('0 17 * * *', async () => {
 });
 
 
-cron.schedule('*/2 * * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
   const today = moment().tz('Asia/Jakarta').format('YYYY-MM-DD');
   console.log(`[CRON] Running notification send at ${today}`);
 
