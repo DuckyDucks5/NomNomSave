@@ -50,10 +50,10 @@ This project was developed as part of a university group assignment, focused on 
 2. Navigate to the backend folder
 3. Run:
 
-\`\`\`bash
+```bash
 npm install
 npm start
-\`\`\`
+```
 
 4. Set up your `.env` file with your MySQL database credentials.
 
@@ -62,10 +62,10 @@ npm start
 1. Navigate to the frontend folder
 2. Run:
 
-\`\`\`bash
+```bash
 flutter pub get
 flutter run
-\`\`\`
+```
 
 > Make sure a device or emulator is connected.
 
