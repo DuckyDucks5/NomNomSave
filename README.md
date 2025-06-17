@@ -71,23 +71,6 @@ flutter run
 
 ---
 
-## 👨‍💻 Team Members
-
-- **Auryn Vania Winatan**  
-- **Christopher Matthew Cahyono**  
-- **Jessica Bella Wijaya Oeij**  
-- **Marvela Felicia**  
-- **Muhammad Rafi Fadhilah**  
-- **Selina**
-
----
-
-## 📂 Project Links
-
-- **Notion (Documentation):** [Notion](https://www.notion.so/NomNomSave-1e26ada7c30980aca5bcfdd54d5bf8ed)
-
----
-
 ## 📌 License
 
 This project is for educational purposes. Feel free to explore and learn from the code!
